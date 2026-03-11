@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IJA Mathematics Competition — Display</title>
+<!-- KaTeX for LaTeX rendering -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="window.katexReady=true"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800;900&family=Baloo+2:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --red:#CC0022;--red-dark:#8B0016;--white:#FFFFFF;--offwhite:#FFF5F6;
+  --yellow:#FFD600;--blue:#006FFF;--orange:#FF6A00;--purple:#8B00E6;--teal:#00B8D4;
+  --green:#00C853;--pink:#FF3D8A;--correct:#00C853;--wrong:#FF6A00;
+}
+html,body{width:100%;height:100%;overflow:hidden;font-family:'Nunito',sans-serif}
+body{background:var(--white);position:relative;display:flex;flex-direction:column}
+body::before{content:'';position:fixed;top:0;left:0;width:44%;height:100%;background:var(--red);clip-path:polygon(0 0,100% 0,72% 100%,0 100%);z-index:0}
+body::after{content:'';position:fixed;top:0;right:0;width:62%;height:100%;background:var(--offwhite);z-index:0}
+
+/* blobs */
+.blobs{position:fixed;inset:0;pointer-events:none;z-index:1;overflow:hidden}
+.blob{position:absolute;border-radius:50%;animation:drift var(--t,16s) ease-in-out infinite alternate;opacity:.13}
+@keyframes drift{0%{transform:translate(0,0) scale(1)}100%{transform:translate(var(--dx,20px),var(--dy,-28px)) scale(1.12)}}
+.floaters{position:fixed;inset:0;pointer-events:none;z-index:2;overflow:hidden}
+.floater{position:absolute;font-family:'Fredoka One',cursive;color:rgba(255,255,255,.28);animation:bob var(--bt,9s) ease-in-out infinite;animation-delay:var(--bd,0s)}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(var(--br,0deg))}50%{transform:translateY(-18px) rotate(calc(var(--br,0deg) + 8deg))}}
+.sparks{position:fixed;inset:0;pointer-events:none;z-index:2;overflow:hidden}
+.spark{position:absolute;border-radius:50%;animation:sparkle var(--st,3s) ease-in-out infinite;animation-delay:var(--sd,0s)}
+@keyframes sparkle{0%,100%{transform:scale(0);opacity:0}50%{transform:scale(1);opacity:1}}
+
+/* ═══ HEADER ═══ */
+.header{position:relative;z-index:20;background:var(--red);box-shadow:0 4px 24px rgba(0,0,0,.22);padding:10px 28px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.hdr-left{display:flex;align-items:center;gap:12px}
+.logo-badge{width:48px;height:48px;border-radius:50%;background:white;border:3px solid var(--yellow);display:flex;align-items:center;justify-content:center;font-family:'Fredoka One',cursive;font-size:22px;color:var(--red);box-shadow:0 0 0 4px rgba(255,255,255,.2);animation:badge-breathe 2.2s ease-in-out infinite}
+@keyframes badge-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+.school-name{font-family:'Baloo 2',cursive;font-size:clamp(13px,1.8vw,22px);font-weight:800;color:white;line-height:1.15}
+.comp-sub{font-size:clamp(8px,.95vw,12px);font-weight:800;letter-spacing:3px;text-transform:uppercase;color:var(--yellow)}
+.hdr-center{font-family:'Fredoka One',cursive;font-size:clamp(14px,2.2vw,28px);color:var(--yellow);text-shadow:2px 2px 0 rgba(0,0,0,.15);letter-spacing:1px;display:flex;align-items:center;gap:8px}
+.spin-star{animation:spin 3.5s linear infinite;display:inline-block}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.trophy-pill{background:var(--yellow);color:var(--red-dark);font-family:'Fredoka One',cursive;font-size:clamp(11px,1.4vw,17px);padding:6px 18px;border-radius:100px;letter-spacing:1px;box-shadow:0 3px 0 #A87C00;animation:pill-bounce 1.6s ease-in-out infinite}
+@keyframes pill-bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+
+/* ═══ TIMER BAR ═══ */
+.timer-strip{position:relative;z-index:20;flex-shrink:0;background:white;border-bottom:3px solid rgba(204,0,34,.12);padding:8px 28px;display:none;align-items:center;gap:14px}
+.timer-strip.visible{display:flex}
+.timer-label{font-family:'Fredoka One',cursive;font-size:clamp(14px,1.8vw,22px);color:var(--red);min-width:60px;text-align:right;flex-shrink:0;transition:color .3s}
+.timer-label.urgent{color:var(--wrong);animation:timer-blink .4s ease-in-out infinite}
+@keyframes timer-blink{0%,100%{opacity:1}50%{opacity:.5}}
+.timer-track{flex:1;height:clamp(14px,1.6vw,20px);background:rgba(204,0,34,.1);border-radius:100px;overflow:hidden;border:2px solid rgba(204,0,34,.15)}
+.timer-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--red) 0%,#FF1A3C 100%);transition:width .9s linear,background .3s;width:100%}
+.timer-fill.urgent{background:linear-gradient(90deg,var(--wrong) 0%,#FF9500 100%)}
+.timer-fill.done{background:linear-gradient(90deg,#999 0%,#bbb 100%);width:0%!important}
+.time-up-badge{
+  display:none;font-family:'Fredoka One',cursive;font-size:clamp(13px,1.6vw,20px);
+  background:var(--wrong);color:white;padding:5px 18px;border-radius:100px;
+  box-shadow:0 3px 0 #B84900;letter-spacing:.5px;flex-shrink:0;
+}
+.time-up-badge.show{display:block;animation:badge-pop .3s cubic-bezier(.34,1.56,.64,1)}
+@keyframes badge-pop{from{transform:scale(.7)}to{transform:scale(1)}}
+
+/* ═══ MAIN ═══ */
+.main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px 32px 16px;position:relative;z-index:10;gap:12px}
+
+/* WAITING */
+#screen-waiting{display:flex;flex-direction:column;align-items:center;gap:20px}
+.trophy-ring{width:clamp(110px,13vw,168px);height:clamp(110px,13vw,168px);border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 8px rgba(204,0,34,.18),0 0 0 20px rgba(204,0,34,.08),0 8px 40px rgba(204,0,34,.35);animation:ring-pulse 2.4s ease-in-out infinite;position:relative}
+@keyframes ring-pulse{0%,100%{box-shadow:0 0 0 8px rgba(204,0,34,.2),0 0 0 20px rgba(204,0,34,.08),0 8px 40px rgba(204,0,34,.3)}50%{box-shadow:0 0 0 18px rgba(204,0,34,.15),0 0 0 36px rgba(204,0,34,.04),0 8px 60px rgba(204,0,34,.45)}}
+.trophy-emoji{font-size:clamp(44px,7.5vw,84px)}
+.orb{position:absolute;inset:-12px;animation:orb-spin var(--os,5s) linear infinite;animation-direction:var(--odir,normal)}
+.orb-dot{position:absolute;width:13px;height:13px;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+@keyframes orb-spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.wait-headline{font-family:'Fredoka One',cursive;font-size:clamp(20px,4vw,54px);color:var(--red);text-align:center;line-height:1.18;text-shadow:3px 3px 0 rgba(204,0,34,.12)}
+.wait-headline em{font-style:normal;background:var(--red);color:white;padding:2px 16px;border-radius:8px;display:inline-block;margin-top:4px}
+.mini-cards{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.mini-card{background:white;border:3px solid var(--red);border-radius:14px;padding:9px 20px;text-align:center;box-shadow:4px 4px 0 var(--red);min-width:82px}
+.mini-card-val{font-family:'Fredoka One',cursive;font-size:clamp(16px,2.5vw,30px);color:var(--red)}
+.mini-card-lbl{font-size:clamp(8px,.85vw,11px);font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#888}
+.ready-btn{background:var(--red);color:white;font-family:'Fredoka One',cursive;font-size:clamp(13px,1.7vw,20px);padding:11px 32px;border-radius:100px;letter-spacing:1px;box-shadow:0 6px 0 var(--red-dark),0 10px 28px rgba(204,0,34,.28);animation:btn-float 1.5s ease-in-out infinite}
+@keyframes btn-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+
+/* QUESTION */
+#screen-question{display:none;width:100%;flex-direction:column;align-items:center;gap:11px}
+.info-bar{width:100%;max-width:1180px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.q-badge{background:var(--red);color:white;font-family:'Fredoka One',cursive;font-size:clamp(12px,1.6vw,20px);padding:7px 22px;border-radius:100px;box-shadow:3px 3px 0 var(--red-dark);letter-spacing:1px}
+.q-cat-tag{background:white;border:3px solid var(--red);color:var(--red);font-family:'Nunito',sans-serif;font-weight:800;font-size:clamp(10px,1.15vw,14px);letter-spacing:2px;text-transform:uppercase;padding:5px 16px;border-radius:100px}
+.pts-badge{background:var(--yellow);color:#333;font-family:'Fredoka One',cursive;font-size:clamp(12px,1.6vw,20px);padding:7px 22px;border-radius:100px;box-shadow:3px 3px 0 #A87C00;letter-spacing:1px}
+
+.question-card{width:100%;max-width:1180px;background:var(--red);border-radius:22px;padding:clamp(14px,2.2vw,34px) clamp(20px,3vw,50px);text-align:center;box-shadow:0 7px 0 var(--red-dark),0 14px 36px rgba(204,0,34,.22);animation:q-drop .4s cubic-bezier(.34,1.5,.64,1) both;position:relative;overflow:hidden}
+.question-card::before{content:'';position:absolute;top:-50%;right:-8%;width:250px;height:250px;border-radius:50%;background:rgba(255,255,255,.06)}
+@keyframes q-drop{from{opacity:0;transform:scale(.88) translateY(-14px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.question-text{font-family:'Baloo 2',cursive;font-size:clamp(16px,2.5vw,36px);font-weight:700;color:white;line-height:1.45;position:relative;z-index:1}
+/* KaTeX overrides for white text on red */
+.question-card .katex{color:white!important;font-size:clamp(16px,2.5vw,36px)!important}
+
+.options-grid{width:100%;max-width:1180px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.option{display:flex;align-items:center;gap:14px;padding:clamp(10px,1.4vw,20px) clamp(14px,2vw,28px);border-radius:16px;cursor:default;transition:transform .25s,box-shadow .25s,opacity .25s;animation:opt-pop .38s cubic-bezier(.34,1.5,.64,1) both;position:relative;overflow:hidden;border:none}
+.option::after{content:'';position:absolute;top:0;right:0;width:55%;height:100%;background:rgba(255,255,255,.09);clip-path:polygon(18% 0,100% 0,100% 100%,0 100%);pointer-events:none}
+@keyframes opt-pop{from{opacity:0;transform:scale(.84) translateY(14px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.option:nth-child(1){animation-delay:.07s;background:var(--blue);box-shadow:0 6px 0 #004ABB,0 10px 28px rgba(0,111,255,.22)}
+.option:nth-child(2){animation-delay:.14s;background:var(--orange);box-shadow:0 6px 0 #B84900,0 10px 28px rgba(255,106,0,.22)}
+.option:nth-child(3){animation-delay:.21s;background:var(--purple);box-shadow:0 6px 0 #5800A0,0 10px 28px rgba(139,0,230,.22)}
+.option:nth-child(4){animation-delay:.28s;background:var(--teal);box-shadow:0 6px 0 #007A8E,0 10px 28px rgba(0,184,212,.22)}
+.opt-letter{width:clamp(36px,4.2vw,54px);height:clamp(36px,4.2vw,54px);border-radius:50%;flex-shrink:0;background:rgba(255,255,255,.22);border:3px solid rgba(255,255,255,.55);display:flex;align-items:center;justify-content:center;font-family:'Fredoka One',cursive;font-size:clamp(14px,1.8vw,24px);color:white;transition:all .3s;position:relative;z-index:1}
+.opt-text{font-family:'Nunito',sans-serif;font-size:clamp(12px,1.75vw,24px);font-weight:800;color:white;line-height:1.3;position:relative;z-index:1}
+.opt-text .katex{color:white!important;font-size:clamp(12px,1.75vw,24px)!important}
+.option.correct{background:var(--correct)!important;box-shadow:0 6px 0 #007A30,0 0 40px rgba(0,200,83,.5),0 0 80px rgba(0,200,83,.2)!important;transform:scale(1.04)!important;animation:correct-pop .5s cubic-bezier(.34,1.56,.64,1) 1 forwards,correct-glow 1.1s ease-in-out 2 .5s!important}
+@keyframes correct-pop{0%{transform:scale(1)}50%{transform:scale(1.09)}100%{transform:scale(1.04)}}
+@keyframes correct-glow{0%,100%{box-shadow:0 6px 0 #007A30,0 0 40px rgba(0,200,83,.5)}50%{box-shadow:0 6px 0 #007A30,0 0 90px rgba(0,200,83,.9)}}
+.option.correct .opt-letter{background:white!important;color:var(--correct)!important;border-color:white!important}
+.option.wrong{opacity:.3!important;filter:grayscale(.8)!important;transform:scale(.96)!important;box-shadow:none!important}
+
+/* status dot */
+.status-dot{position:fixed;bottom:12px;right:12px;width:10px;height:10px;border-radius:50%;background:#bbb;z-index:100;transition:background .3s}
+.status-dot.live{background:var(--correct);box-shadow:0 0 8px var(--correct)}
+.status-dot.error{background:var(--wrong)}
+
+/* confetti */
+.burst{position:fixed;inset:0;pointer-events:none;z-index:60;display:none}
+.burst.on{display:block}
+.cp{position:absolute;animation:cffall var(--ct,1.8s) ease-in var(--cd,0s) forwards;opacity:1;border-radius:2px}
+@keyframes cffall{0%{transform:translateY(-10px) rotate(0);opacity:1}100%{transform:translateY(110vh) rotate(var(--cr,360deg));opacity:0}}
+</style>
+</head>
+<body>
+
+<div class="blobs" id="blobs"></div>
+<div class="floaters" id="floaters"></div>
+<div class="sparks" id="sparks"></div>
+<div class="burst" id="burst"></div>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="hdr-left">
+    <div class="logo-badge">∑</div>
+    <div>
+      <div class="school-name">Infant Jesus Academy</div>
+      <div class="comp-sub">★ Mathematics Competition ★</div>
+    </div>
+  </div>
+  <div class="hdr-center"><span class="spin-star">✦</span>Maths Challenge!<span class="spin-star" style="animation-direction:reverse">✦</span></div>
+  <div class="trophy-pill">🏆 Win Big!</div>
+</header>
+
+<!-- TIMER STRIP -->
+<div class="timer-strip" id="timer-strip">
+  <div class="timer-label" id="timer-label">30s</div>
+  <div class="timer-track"><div class="timer-fill" id="timer-fill"></div></div>
+  <div class="time-up-badge" id="time-up-badge">⏰ TIME'S UP!</div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- WAITING -->
+  <div id="screen-waiting">
+    <div style="position:relative;display:inline-block">
+      <div class="trophy-ring"><div class="trophy-emoji">🏆</div></div>
+      <div class="orb" style="--os:4s"><div class="orb-dot" style="background:var(--yellow);top:4px;left:50%;transform:translateX(-50%)"></div></div>
+      <div class="orb" style="--os:6s;--odir:reverse;inset:-22px"><div class="orb-dot" style="background:var(--blue);top:50%;left:4px;transform:translateY(-50%)"></div></div>
+      <div class="orb" style="--os:5.5s;inset:-14px"><div class="orb-dot" style="background:var(--pink);bottom:4px;top:auto;left:50%;transform:translateX(-50%)"></div></div>
+    </div>
+    <div class="wait-headline">Welcome to the<br><em>IJA Maths Challenge!</em></div>
+    <div class="mini-cards">
+      <div class="mini-card"><div class="mini-card-val" id="wait-total">—</div><div class="mini-card-lbl">Questions</div></div>
+      <div class="mini-card" style="border-color:var(--blue);box-shadow:4px 4px 0 var(--blue)"><div class="mini-card-val" style="color:var(--blue)">🧮</div><div class="mini-card-lbl">Solve!</div></div>
+      <div class="mini-card" style="border-color:var(--orange);box-shadow:4px 4px 0 var(--orange)"><div class="mini-card-val" style="color:var(--orange)">🌟</div><div class="mini-card-lbl">Earn Pts</div></div>
+    </div>
+    <div class="ready-btn" id="ready-btn">⏳ Get Ready… Host is preparing!</div>
+  </div>
+
+  <!-- QUESTION -->
+  <div id="screen-question">
+    <div class="info-bar">
+      <div class="q-badge" id="q-counter">Q 1 of 10</div>
+      <div class="q-cat-tag" id="q-category">Mathematics</div>
+      <div class="pts-badge" id="q-points">⭐ 10 pts</div>
+    </div>
+    <div class="question-card">
+      <div class="question-text" id="q-text"></div>
+    </div>
+    <div class="options-grid" id="options-grid"></div>
+  </div>
+
+</div>
+
+<div class="status-dot" id="status-dot"></div>
+
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbwqj7uX5150SC8_172OLmZwP8DplMIL5jbT2ppO1WBBEqEeUE2kHmojAMgCNV740_tJ/exec';
+const POLL_MS = 2000;
+let lastPhase='', lastQId=0;
+
+// Timer state
+let timerInterval=null;
+let timerDuration=30, timerStarted=0, clockOffset=0;
+
+// ── Background ──────────────────────────────────────────────────
+(function(){
+  const blobCols=['#FFD600','#006FFF','#FF6A00','#8B00E6','#00B8D4','#FF3D8A','#00C853','#CC0022'];
+  const bl=document.getElementById('blobs');
+  for(let i=0;i<14;i++){const b=document.createElement('div');b.className='blob';const sz=50+Math.random()*130;b.style.cssText=`width:${sz}px;height:${sz}px;left:${38+Math.random()*58}%;top:${Math.random()*100}%;background:${blobCols[i%blobCols.length]};--t:${11+Math.random()*14}s;--dx:${(Math.random()-.5)*55}px;--dy:${(Math.random()-.5)*55}px;animation-delay:${Math.random()*7}s`;bl.appendChild(b)}
+  const syms=['π','√','∑','∞','∫','Δ','θ','±','÷','×','²','³','≠','≥','α'];
+  const fl=document.getElementById('floaters');
+  for(let i=0;i<20;i++){const d=document.createElement('div');d.className='floater';d.textContent=syms[i%syms.length];d.style.cssText=`left:${Math.random()*37}%;top:${Math.random()*95}%;font-size:${18+Math.random()*36}px;--bt:${7+Math.random()*9}s;--bd:${Math.random()*5}s;--br:${(Math.random()-.5)*20}deg`;fl.appendChild(d)}
+  const spCols=['#CC0022','#FFD600','#006FFF','#FF6A00','#8B00E6','#00C853','#FF3D8A'];
+  const sp=document.getElementById('sparks');
+  for(let i=0;i<35;i++){const d=document.createElement('div');d.className='spark';const sz=3+Math.random()*9;d.style.cssText=`width:${sz}px;height:${sz}px;left:${43+Math.random()*54}%;top:${Math.random()*100}%;background:${spCols[i%spCols.length]};--st:${1.5+Math.random()*3.5}s;--sd:${Math.random()*3.5}s`;sp.appendChild(d)}
+})();
+
+// ── KaTeX render helper ─────────────────────────────────────────
+function renderLatex(el){
+  if(!window.renderMathInElement) return;
+  renderMathInElement(el,{
+    delimiters:[
+      {left:'$$',right:'$$',display:true},
+      {left:'$',right:'$',display:false},
+      {left:'\\(',right:'\\)',display:false},
+      {left:'\\[',right:'\\]',display:true}
+    ],
+    throwOnError:false
+  });
+}
+
+// ── Timer ───────────────────────────────────────────────────────
+function startTimer(duration, started, serverTime){
+  clearInterval(timerInterval);
+  timerDuration=duration; timerStarted=started;
+  // Compute drift: serverTime is when server sent this response
+  clockOffset = serverTime - Date.now(); // positive if server is ahead
+
+  const strip=document.getElementById('timer-strip');
+  const fill =document.getElementById('timer-fill');
+  const label=document.getElementById('timer-label');
+  const badge=document.getElementById('time-up-badge');
+
+  if(!started || started===0){strip.classList.remove('visible');return;}
+  strip.classList.add('visible');
+  badge.classList.remove('show');
+  fill.classList.remove('urgent','done');
+  label.classList.remove('urgent');
+
+  timerInterval=setInterval(()=>{
+    const now=Date.now()+clockOffset;
+    const elapsed=Math.floor((now-timerStarted)/1000);
+    const remaining=Math.max(0, duration-elapsed);
+    const pct=(remaining/duration)*100;
+
+    label.textContent=remaining+'s';
+    fill.style.width=pct+'%';
+
+    if(remaining<=10){
+      fill.classList.add('urgent');
+      label.classList.add('urgent');
+    }else{
+      fill.classList.remove('urgent');
+      label.classList.remove('urgent');
+    }
+    if(remaining===0){
+      clearInterval(timerInterval);
+      fill.classList.add('done');
+      badge.classList.add('show');
+      label.textContent='0s';
+      label.classList.remove('urgent');
+    }
+  },200);
+}
+
+function stopTimer(){
+  clearInterval(timerInterval);
+  const strip=document.getElementById('timer-strip');
+  strip.classList.remove('visible');
+}
+
+// ── Confetti ────────────────────────────────────────────────────
+function fireBurst(){
+  const el=document.getElementById('burst');el.innerHTML='';el.className='burst on';
+  const cols=['#CC0022','#FFD600','#006FFF','#FF6A00','#8B00E6','#00C853','#FF3D8A','#00B8D4','#FFFFFF'];
+  for(let i=0;i<80;i++){const p=document.createElement('div');p.className='cp';p.style.cssText=`left:${Math.random()*100}%;background:${cols[Math.floor(Math.random()*cols.length)]};width:${6+Math.random()*10}px;height:${10+Math.random()*14}px;--ct:${1.1+Math.random()*1.3}s;--cd:${Math.random()*.7}s;--cr:${(Math.random()-.5)*720}deg`;el.appendChild(p)}
+  setTimeout(()=>{el.className='burst';el.innerHTML=''},3000);
+}
+
+// ── Screens ─────────────────────────────────────────────────────
+function showWaiting(){
+  document.getElementById('screen-waiting').style.display='flex';
+  document.getElementById('screen-question').style.display='none';
+  stopTimer();
+}
+function showQScreen(){
+  document.getElementById('screen-waiting').style.display='none';
+  document.getElementById('screen-question').style.display='flex';
+}
+
+// ── Render question ──────────────────────────────────────────────
+function renderQuestion(q,phase,force){
+  if(!q) return showWaiting();
+  if(force||q.id!==lastQId){
+    document.getElementById('q-counter').textContent=`Q ${q.id} of ${window._total||'?'}`;
+    document.getElementById('q-category').textContent=q.category||'Mathematics';
+    document.getElementById('q-points').textContent=`⭐ ${q.points} pts`;
+    document.getElementById('q-text').textContent=q.text;
+    renderLatex(document.getElementById('q-text'));
+
+    const grid=document.getElementById('options-grid');grid.innerHTML='';
+    ['A','B','C','D'].forEach(letter=>{
+      if(!q.options[letter]) return;
+      const d=document.createElement('div');d.className='option';d.id='opt-'+letter;
+      d.innerHTML=`<div class="opt-letter">${letter}</div><div class="opt-text">${q.options[letter]}</div>`;
+      grid.appendChild(d);
+      renderLatex(d.querySelector('.opt-text'));
+    });
+    showQScreen();lastQId=q.id;
+  }
+  if(phase==='reveal'&&q.correct){
+    let burst=false;
+    ['A','B','C','D'].forEach(letter=>{
+      const el=document.getElementById('opt-'+letter);if(!el)return;
+      if(letter===q.correct){el.classList.add('correct');el.classList.remove('wrong');if(!burst){fireBurst();burst=true}}
+      else{el.classList.add('wrong');el.classList.remove('correct')}
+    });
+    stopTimer();
+  } else {
+    ['A','B','C','D'].forEach(letter=>{const el=document.getElementById('opt-'+letter);if(el)el.classList.remove('correct','wrong')});
+  }
+}
+
+// ── Poll ─────────────────────────────────────────────────────────
+async function poll(){
+  try{
+    const res=await fetch(API_URL+'?action=getState',{redirect:'follow'});
+    const data=await res.json();
+    document.getElementById('status-dot').className='status-dot live';
+    window._total=data.totalQuestions;
+    if(document.getElementById('wait-total')) document.getElementById('wait-total').textContent=data.totalQuestions||'—';
+
+    const sameQ=data.question&&data.question.id===lastQId;
+    const samePhase=data.phase===lastPhase;
+
+    if(!samePhase||!sameQ){
+      if(data.phase==='waiting') showWaiting();
+      else renderQuestion(data.question,data.phase,!sameQ);
+    }
+
+    // Start/update timer when question phase is active
+    if(data.phase==='question'&&data.timerStarted>0){
+      if(data.timerStarted!==timerStarted||!sameQ){
+        startTimer(data.timerDuration,data.timerStarted,data.serverTime);
+      }
+    }
+    lastPhase=data.phase;
+  }catch(e){document.getElementById('status-dot').className='status-dot error'}
+}
+
+if(API_URL==='YOUR_GAS_WEB_APP_URL_HERE'){
+  document.getElementById('ready-btn').textContent='⚠️ Set API_URL in the script block';
+  document.getElementById('ready-btn').style.background='#FF6A00';
+}else{poll();setInterval(poll,POLL_MS)}
+</script>
+</body>
+</html>
