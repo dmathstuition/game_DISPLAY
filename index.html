@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>IJA Mathematics Competition — Display</title>
-<!-- KaTeX for LaTeX rendering -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
@@ -21,8 +20,6 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Nunito',sans-serif
 body{background:var(--white);position:relative;display:flex;flex-direction:column}
 body::before{content:'';position:fixed;top:0;left:0;width:44%;height:100%;background:var(--red);clip-path:polygon(0 0,100% 0,72% 100%,0 100%);z-index:0}
 body::after{content:'';position:fixed;top:0;right:0;width:62%;height:100%;background:var(--offwhite);z-index:0}
-
-/* blobs */
 .blobs{position:fixed;inset:0;pointer-events:none;z-index:1;overflow:hidden}
 .blob{position:absolute;border-radius:50%;animation:drift var(--t,16s) ease-in-out infinite alternate;opacity:.13}
 @keyframes drift{0%{transform:translate(0,0) scale(1)}100%{transform:translate(var(--dx,20px),var(--dy,-28px)) scale(1.12)}}
@@ -32,8 +29,6 @@ body::after{content:'';position:fixed;top:0;right:0;width:62%;height:100%;backgr
 .sparks{position:fixed;inset:0;pointer-events:none;z-index:2;overflow:hidden}
 .spark{position:absolute;border-radius:50%;animation:sparkle var(--st,3s) ease-in-out infinite;animation-delay:var(--sd,0s)}
 @keyframes sparkle{0%,100%{transform:scale(0);opacity:0}50%{transform:scale(1);opacity:1}}
-
-/* ═══ HEADER ═══ */
 .header{position:relative;z-index:20;background:var(--red);box-shadow:0 4px 24px rgba(0,0,0,.22);padding:10px 28px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .hdr-left{display:flex;align-items:center;gap:12px}
 .logo-badge{width:48px;height:48px;border-radius:50%;background:white;border:3px solid var(--yellow);display:flex;align-items:center;justify-content:center;font-family:'Fredoka One',cursive;font-size:22px;color:var(--red);box-shadow:0 0 0 4px rgba(255,255,255,.2);animation:badge-breathe 2.2s ease-in-out infinite}
@@ -45,8 +40,6 @@ body::after{content:'';position:fixed;top:0;right:0;width:62%;height:100%;backgr
 @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
 .trophy-pill{background:var(--yellow);color:var(--red-dark);font-family:'Fredoka One',cursive;font-size:clamp(11px,1.4vw,17px);padding:6px 18px;border-radius:100px;letter-spacing:1px;box-shadow:0 3px 0 #A87C00;animation:pill-bounce 1.6s ease-in-out infinite}
 @keyframes pill-bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
-
-/* ═══ TIMER BAR ═══ */
 .timer-strip{position:relative;z-index:20;flex-shrink:0;background:white;border-bottom:3px solid rgba(204,0,34,.12);padding:8px 28px;display:none;align-items:center;gap:14px}
 .timer-strip.visible{display:flex}
 .timer-label{font-family:'Fredoka One',cursive;font-size:clamp(14px,1.8vw,22px);color:var(--red);min-width:60px;text-align:right;flex-shrink:0;transition:color .3s}
@@ -55,19 +48,11 @@ body::after{content:'';position:fixed;top:0;right:0;width:62%;height:100%;backgr
 .timer-track{flex:1;height:clamp(14px,1.6vw,20px);background:rgba(204,0,34,.1);border-radius:100px;overflow:hidden;border:2px solid rgba(204,0,34,.15)}
 .timer-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--red) 0%,#FF1A3C 100%);transition:width .9s linear,background .3s;width:100%}
 .timer-fill.urgent{background:linear-gradient(90deg,var(--wrong) 0%,#FF9500 100%)}
-.timer-fill.done{background:linear-gradient(90deg,#999 0%,#bbb 100%);width:0%!important}
-.time-up-badge{
-  display:none;font-family:'Fredoka One',cursive;font-size:clamp(13px,1.6vw,20px);
-  background:var(--wrong);color:white;padding:5px 18px;border-radius:100px;
-  box-shadow:0 3px 0 #B84900;letter-spacing:.5px;flex-shrink:0;
-}
+.timer-fill.done{background:linear-gradient(90deg,#999 0%,#bbb 100%);width:0%!important;transition:none}
+.time-up-badge{display:none;font-family:'Fredoka One',cursive;font-size:clamp(13px,1.6vw,20px);background:var(--wrong);color:white;padding:5px 18px;border-radius:100px;box-shadow:0 3px 0 #B84900;letter-spacing:.5px;flex-shrink:0}
 .time-up-badge.show{display:block;animation:badge-pop .3s cubic-bezier(.34,1.56,.64,1)}
 @keyframes badge-pop{from{transform:scale(.7)}to{transform:scale(1)}}
-
-/* ═══ MAIN ═══ */
 .main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px 32px 16px;position:relative;z-index:10;gap:12px}
-
-/* WAITING */
 #screen-waiting{display:flex;flex-direction:column;align-items:center;gap:20px}
 .trophy-ring{width:clamp(110px,13vw,168px);height:clamp(110px,13vw,168px);border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 8px rgba(204,0,34,.18),0 0 0 20px rgba(204,0,34,.08),0 8px 40px rgba(204,0,34,.35);animation:ring-pulse 2.4s ease-in-out infinite;position:relative}
 @keyframes ring-pulse{0%,100%{box-shadow:0 0 0 8px rgba(204,0,34,.2),0 0 0 20px rgba(204,0,34,.08),0 8px 40px rgba(204,0,34,.3)}50%{box-shadow:0 0 0 18px rgba(204,0,34,.15),0 0 0 36px rgba(204,0,34,.04),0 8px 60px rgba(204,0,34,.45)}}
@@ -83,21 +68,16 @@ body::after{content:'';position:fixed;top:0;right:0;width:62%;height:100%;backgr
 .mini-card-lbl{font-size:clamp(8px,.85vw,11px);font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#888}
 .ready-btn{background:var(--red);color:white;font-family:'Fredoka One',cursive;font-size:clamp(13px,1.7vw,20px);padding:11px 32px;border-radius:100px;letter-spacing:1px;box-shadow:0 6px 0 var(--red-dark),0 10px 28px rgba(204,0,34,.28);animation:btn-float 1.5s ease-in-out infinite}
 @keyframes btn-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
-
-/* QUESTION */
 #screen-question{display:none;width:100%;flex-direction:column;align-items:center;gap:11px}
 .info-bar{width:100%;max-width:1180px;display:flex;align-items:center;justify-content:space-between;gap:10px}
 .q-badge{background:var(--red);color:white;font-family:'Fredoka One',cursive;font-size:clamp(12px,1.6vw,20px);padding:7px 22px;border-radius:100px;box-shadow:3px 3px 0 var(--red-dark);letter-spacing:1px}
 .q-cat-tag{background:white;border:3px solid var(--red);color:var(--red);font-family:'Nunito',sans-serif;font-weight:800;font-size:clamp(10px,1.15vw,14px);letter-spacing:2px;text-transform:uppercase;padding:5px 16px;border-radius:100px}
 .pts-badge{background:var(--yellow);color:#333;font-family:'Fredoka One',cursive;font-size:clamp(12px,1.6vw,20px);padding:7px 22px;border-radius:100px;box-shadow:3px 3px 0 #A87C00;letter-spacing:1px}
-
 .question-card{width:100%;max-width:1180px;background:var(--red);border-radius:22px;padding:clamp(14px,2.2vw,34px) clamp(20px,3vw,50px);text-align:center;box-shadow:0 7px 0 var(--red-dark),0 14px 36px rgba(204,0,34,.22);animation:q-drop .4s cubic-bezier(.34,1.5,.64,1) both;position:relative;overflow:hidden}
 .question-card::before{content:'';position:absolute;top:-50%;right:-8%;width:250px;height:250px;border-radius:50%;background:rgba(255,255,255,.06)}
 @keyframes q-drop{from{opacity:0;transform:scale(.88) translateY(-14px)}to{opacity:1;transform:scale(1) translateY(0)}}
 .question-text{font-family:'Baloo 2',cursive;font-size:clamp(16px,2.5vw,36px);font-weight:700;color:white;line-height:1.45;position:relative;z-index:1}
-/* KaTeX overrides for white text on red */
 .question-card .katex{color:white!important;font-size:clamp(16px,2.5vw,36px)!important}
-
 .options-grid{width:100%;max-width:1180px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .option{display:flex;align-items:center;gap:14px;padding:clamp(10px,1.4vw,20px) clamp(14px,2vw,28px);border-radius:16px;cursor:default;transition:transform .25s,box-shadow .25s,opacity .25s;animation:opt-pop .38s cubic-bezier(.34,1.5,.64,1) both;position:relative;overflow:hidden;border:none}
 .option::after{content:'';position:absolute;top:0;right:0;width:55%;height:100%;background:rgba(255,255,255,.09);clip-path:polygon(18% 0,100% 0,100% 100%,0 100%);pointer-events:none}
@@ -114,13 +94,9 @@ body::after{content:'';position:fixed;top:0;right:0;width:62%;height:100%;backgr
 @keyframes correct-glow{0%,100%{box-shadow:0 6px 0 #007A30,0 0 40px rgba(0,200,83,.5)}50%{box-shadow:0 6px 0 #007A30,0 0 90px rgba(0,200,83,.9)}}
 .option.correct .opt-letter{background:white!important;color:var(--correct)!important;border-color:white!important}
 .option.wrong{opacity:.3!important;filter:grayscale(.8)!important;transform:scale(.96)!important;box-shadow:none!important}
-
-/* status dot */
 .status-dot{position:fixed;bottom:12px;right:12px;width:10px;height:10px;border-radius:50%;background:#bbb;z-index:100;transition:background .3s}
 .status-dot.live{background:var(--correct);box-shadow:0 0 8px var(--correct)}
 .status-dot.error{background:var(--wrong)}
-
-/* confetti */
 .burst{position:fixed;inset:0;pointer-events:none;z-index:60;display:none}
 .burst.on{display:block}
 .cp{position:absolute;animation:cffall var(--ct,1.8s) ease-in var(--cd,0s) forwards;opacity:1;border-radius:2px}
@@ -134,7 +110,6 @@ body::after{content:'';position:fixed;top:0;right:0;width:62%;height:100%;backgr
 <div class="sparks" id="sparks"></div>
 <div class="burst" id="burst"></div>
 
-<!-- HEADER -->
 <header class="header">
   <div class="hdr-left">
     <div class="logo-badge">∑</div>
@@ -147,17 +122,13 @@ body::after{content:'';position:fixed;top:0;right:0;width:62%;height:100%;backgr
   <div class="trophy-pill">🏆 Win Big!</div>
 </header>
 
-<!-- TIMER STRIP -->
 <div class="timer-strip" id="timer-strip">
   <div class="timer-label" id="timer-label">30s</div>
   <div class="timer-track"><div class="timer-fill" id="timer-fill"></div></div>
   <div class="time-up-badge" id="time-up-badge">⏰ TIME'S UP!</div>
 </div>
 
-<!-- MAIN -->
 <div class="main">
-
-  <!-- WAITING -->
   <div id="screen-waiting">
     <div style="position:relative;display:inline-block">
       <div class="trophy-ring"><div class="trophy-emoji">🏆</div></div>
@@ -171,10 +142,8 @@ body::after{content:'';position:fixed;top:0;right:0;width:62%;height:100%;backgr
       <div class="mini-card" style="border-color:var(--blue);box-shadow:4px 4px 0 var(--blue)"><div class="mini-card-val" style="color:var(--blue)">🧮</div><div class="mini-card-lbl">Solve!</div></div>
       <div class="mini-card" style="border-color:var(--orange);box-shadow:4px 4px 0 var(--orange)"><div class="mini-card-val" style="color:var(--orange)">🌟</div><div class="mini-card-lbl">Earn Pts</div></div>
     </div>
-    <div class="ready-btn" id="ready-btn">⏳ Get Ready… Host is preparing!</div>
+    <div class="ready-btn">⏳ Get Ready… Host is preparing!</div>
   </div>
-
-  <!-- QUESTION -->
   <div id="screen-question">
     <div class="info-bar">
       <div class="q-badge" id="q-counter">Q 1 of 10</div>
@@ -186,81 +155,82 @@ body::after{content:'';position:fixed;top:0;right:0;width:62%;height:100%;backgr
     </div>
     <div class="options-grid" id="options-grid"></div>
   </div>
-
 </div>
 
 <div class="status-dot" id="status-dot"></div>
 
 <script>
+// ── CONFIG ────────────────────────────────────────────────────
 const API_URL = 'https://script.google.com/macros/s/AKfycbwqj7uX5150SC8_172OLmZwP8DplMIL5jbT2ppO1WBBEqEeUE2kHmojAMgCNV740_tJ/exec';
-const POLL_MS = 2000;
+const POLL_MS = 800; // ⚡ Fast polling
+// ─────────────────────────────────────────────────────────────
+
 let lastPhase='', lastQId=0;
+let timerInterval=null, timerDuration=30, timerStarted=0, clockOffset=0;
+let revealShown=false;  // ✅ FIX: confetti only fires once per reveal
+let pollRunning=false;
 
-// Timer state
-let timerInterval=null;
-let timerDuration=30, timerStarted=0, clockOffset=0;
-
-// ── Background ──────────────────────────────────────────────────
+// ── Background decoration ─────────────────────────────────────
 (function(){
   const blobCols=['#FFD600','#006FFF','#FF6A00','#8B00E6','#00B8D4','#FF3D8A','#00C853','#CC0022'];
   const bl=document.getElementById('blobs');
-  for(let i=0;i<14;i++){const b=document.createElement('div');b.className='blob';const sz=50+Math.random()*130;b.style.cssText=`width:${sz}px;height:${sz}px;left:${38+Math.random()*58}%;top:${Math.random()*100}%;background:${blobCols[i%blobCols.length]};--t:${11+Math.random()*14}s;--dx:${(Math.random()-.5)*55}px;--dy:${(Math.random()-.5)*55}px;animation-delay:${Math.random()*7}s`;bl.appendChild(b)}
+  for(let i=0;i<14;i++){
+    const b=document.createElement('div');b.className='blob';
+    const sz=50+Math.random()*130;
+    b.style.cssText=`width:${sz}px;height:${sz}px;left:${38+Math.random()*58}%;top:${Math.random()*100}%;background:${blobCols[i%blobCols.length]};--t:${11+Math.random()*14}s;--dx:${(Math.random()-.5)*55}px;--dy:${(Math.random()-.5)*55}px;animation-delay:${Math.random()*7}s`;
+    bl.appendChild(b);
+  }
   const syms=['π','√','∑','∞','∫','Δ','θ','±','÷','×','²','³','≠','≥','α'];
   const fl=document.getElementById('floaters');
-  for(let i=0;i<20;i++){const d=document.createElement('div');d.className='floater';d.textContent=syms[i%syms.length];d.style.cssText=`left:${Math.random()*37}%;top:${Math.random()*95}%;font-size:${18+Math.random()*36}px;--bt:${7+Math.random()*9}s;--bd:${Math.random()*5}s;--br:${(Math.random()-.5)*20}deg`;fl.appendChild(d)}
+  for(let i=0;i<20;i++){
+    const d=document.createElement('div');d.className='floater';d.textContent=syms[i%syms.length];
+    d.style.cssText=`left:${Math.random()*37}%;top:${Math.random()*95}%;font-size:${18+Math.random()*36}px;--bt:${7+Math.random()*9}s;--bd:${Math.random()*5}s;--br:${(Math.random()-.5)*20}deg`;
+    fl.appendChild(d);
+  }
   const spCols=['#CC0022','#FFD600','#006FFF','#FF6A00','#8B00E6','#00C853','#FF3D8A'];
   const sp=document.getElementById('sparks');
-  for(let i=0;i<35;i++){const d=document.createElement('div');d.className='spark';const sz=3+Math.random()*9;d.style.cssText=`width:${sz}px;height:${sz}px;left:${43+Math.random()*54}%;top:${Math.random()*100}%;background:${spCols[i%spCols.length]};--st:${1.5+Math.random()*3.5}s;--sd:${Math.random()*3.5}s`;sp.appendChild(d)}
+  for(let i=0;i<35;i++){
+    const d=document.createElement('div');d.className='spark';
+    const sz=3+Math.random()*9;
+    d.style.cssText=`width:${sz}px;height:${sz}px;left:${43+Math.random()*54}%;top:${Math.random()*100}%;background:${spCols[i%spCols.length]};--st:${1.5+Math.random()*3.5}s;--sd:${Math.random()*3.5}s`;
+    sp.appendChild(d);
+  }
 })();
 
-// ── KaTeX render helper ─────────────────────────────────────────
 function renderLatex(el){
   if(!window.renderMathInElement) return;
-  renderMathInElement(el,{
-    delimiters:[
-      {left:'$$',right:'$$',display:true},
-      {left:'$',right:'$',display:false},
-      {left:'\\(',right:'\\)',display:false},
-      {left:'\\[',right:'\\]',display:true}
-    ],
-    throwOnError:false
-  });
+  renderMathInElement(el,{delimiters:[
+    {left:'$$',right:'$$',display:true},
+    {left:'$',right:'$',display:false},
+    {left:'\\(',right:'\\)',display:false},
+    {left:'\\[',right:'\\]',display:true}
+  ],throwOnError:false});
 }
 
-// ── Timer ───────────────────────────────────────────────────────
+// ── Timer ─────────────────────────────────────────────────────
 function startTimer(duration, started, serverTime){
   clearInterval(timerInterval);
   timerDuration=duration; timerStarted=started;
-  // Compute drift: serverTime is when server sent this response
-  clockOffset = serverTime - Date.now(); // positive if server is ahead
-
+  clockOffset=serverTime ? (serverTime - Date.now()) : 0;
   const strip=document.getElementById('timer-strip');
-  const fill =document.getElementById('timer-fill');
+  const fill=document.getElementById('timer-fill');
   const label=document.getElementById('timer-label');
   const badge=document.getElementById('time-up-badge');
-
-  if(!started || started===0){strip.classList.remove('visible');return;}
+  if(!started||started===0){strip.classList.remove('visible');return}
   strip.classList.add('visible');
   badge.classList.remove('show');
   fill.classList.remove('urgent','done');
   label.classList.remove('urgent');
-
+  fill.style.width='100%';
   timerInterval=setInterval(()=>{
     const now=Date.now()+clockOffset;
     const elapsed=Math.floor((now-timerStarted)/1000);
-    const remaining=Math.max(0, duration-elapsed);
+    const remaining=Math.max(0,duration-elapsed);
     const pct=(remaining/duration)*100;
-
     label.textContent=remaining+'s';
     fill.style.width=pct+'%';
-
-    if(remaining<=10){
-      fill.classList.add('urgent');
-      label.classList.add('urgent');
-    }else{
-      fill.classList.remove('urgent');
-      label.classList.remove('urgent');
-    }
+    if(remaining<=10){fill.classList.add('urgent');label.classList.add('urgent')}
+    else{fill.classList.remove('urgent');label.classList.remove('urgent')}
     if(remaining===0){
       clearInterval(timerInterval);
       fill.classList.add('done');
@@ -273,33 +243,51 @@ function startTimer(duration, started, serverTime){
 
 function stopTimer(){
   clearInterval(timerInterval);
+  timerStarted=0;
   const strip=document.getElementById('timer-strip');
   strip.classList.remove('visible');
+  document.getElementById('time-up-badge').classList.remove('show');
+  const fill=document.getElementById('timer-fill');
+  fill.classList.remove('urgent','done');
+  fill.style.width='100%';
+  document.getElementById('timer-label').classList.remove('urgent');
 }
 
-// ── Confetti ────────────────────────────────────────────────────
 function fireBurst(){
   const el=document.getElementById('burst');el.innerHTML='';el.className='burst on';
   const cols=['#CC0022','#FFD600','#006FFF','#FF6A00','#8B00E6','#00C853','#FF3D8A','#00B8D4','#FFFFFF'];
-  for(let i=0;i<80;i++){const p=document.createElement('div');p.className='cp';p.style.cssText=`left:${Math.random()*100}%;background:${cols[Math.floor(Math.random()*cols.length)]};width:${6+Math.random()*10}px;height:${10+Math.random()*14}px;--ct:${1.1+Math.random()*1.3}s;--cd:${Math.random()*.7}s;--cr:${(Math.random()-.5)*720}deg`;el.appendChild(p)}
+  for(let i=0;i<80;i++){
+    const p=document.createElement('div');p.className='cp';
+    p.style.cssText=`left:${Math.random()*100}%;background:${cols[Math.floor(Math.random()*cols.length)]};width:${6+Math.random()*10}px;height:${10+Math.random()*14}px;--ct:${1.1+Math.random()*1.3}s;--cd:${Math.random()*.7}s;--cr:${(Math.random()-.5)*720}deg`;
+    el.appendChild(p);
+  }
   setTimeout(()=>{el.className='burst';el.innerHTML=''},3000);
 }
 
-// ── Screens ─────────────────────────────────────────────────────
+// ✅ FIX #1: Full reset when host cancels / pauses session ─────
 function showWaiting(){
+  // Reset ALL per-question state
+  lastQId=0;        // Force full re-render on next question
+  revealShown=false;
+  stopTimer();
   document.getElementById('screen-waiting').style.display='flex';
   document.getElementById('screen-question').style.display='none';
-  stopTimer();
+  // Clear stale question content
+  document.getElementById('q-text').textContent='';
+  document.getElementById('options-grid').innerHTML='';
 }
+
 function showQScreen(){
   document.getElementById('screen-waiting').style.display='none';
   document.getElementById('screen-question').style.display='flex';
 }
 
-// ── Render question ──────────────────────────────────────────────
-function renderQuestion(q,phase,force){
+function renderQuestion(q, phase, isNewQ){
   if(!q) return showWaiting();
-  if(force||q.id!==lastQId){
+
+  if(isNewQ){
+    // Fresh question — re-render everything
+    revealShown=false;
     document.getElementById('q-counter').textContent=`Q ${q.id} of ${window._total||'?'}`;
     document.getElementById('q-category').textContent=q.category||'Mathematics';
     document.getElementById('q-points').textContent=`⭐ ${q.points} pts`;
@@ -314,52 +302,83 @@ function renderQuestion(q,phase,force){
       grid.appendChild(d);
       renderLatex(d.querySelector('.opt-text'));
     });
-    showQScreen();lastQId=q.id;
+    showQScreen();
+    lastQId=q.id;
   }
+
+  // Apply reveal state (correct/wrong highlights + confetti)
   if(phase==='reveal'&&q.correct){
-    let burst=false;
+    if(!revealShown){  // ✅ FIX: confetti only fires once
+      revealShown=true;
+      let burst=false;
+      ['A','B','C','D'].forEach(letter=>{
+        const el=document.getElementById('opt-'+letter);if(!el)return;
+        if(letter===q.correct){
+          el.classList.add('correct');el.classList.remove('wrong');
+          if(!burst){fireBurst();burst=true}
+        } else {
+          el.classList.add('wrong');el.classList.remove('correct');
+        }
+      });
+      stopTimer();
+    }
+  } else if(phase==='question') {
+    // Clear any leftover reveal styling when a new question starts
     ['A','B','C','D'].forEach(letter=>{
-      const el=document.getElementById('opt-'+letter);if(!el)return;
-      if(letter===q.correct){el.classList.add('correct');el.classList.remove('wrong');if(!burst){fireBurst();burst=true}}
-      else{el.classList.add('wrong');el.classList.remove('correct')}
+      const el=document.getElementById('opt-'+letter);
+      if(el) el.classList.remove('correct','wrong');
     });
-    stopTimer();
-  } else {
-    ['A','B','C','D'].forEach(letter=>{const el=document.getElementById('opt-'+letter);if(el)el.classList.remove('correct','wrong')});
   }
 }
 
-// ── Poll ─────────────────────────────────────────────────────────
+// ✅ FIX #2: Fast poll + cache-busting + overlap prevention ────
 async function poll(){
+  if(pollRunning) return;
+  pollRunning=true;
   try{
-    const res=await fetch(API_URL+'?action=getState',{redirect:'follow'});
+    const res=await fetch(API_URL+'?action=getState',{redirect:'follow',cache:'no-store'});
     const data=await res.json();
     document.getElementById('status-dot').className='status-dot live';
+
     window._total=data.totalQuestions;
-    if(document.getElementById('wait-total')) document.getElementById('wait-total').textContent=data.totalQuestions||'—';
+    const wtEl=document.getElementById('wait-total');
+    if(wtEl) wtEl.textContent=data.totalQuestions||'—';
 
-    const sameQ=data.question&&data.question.id===lastQId;
-    const samePhase=data.phase===lastPhase;
+    const isNewQ=data.question&&data.question.id!==lastQId;
+    const isNewPh=data.phase!==lastPhase;
 
-    if(!samePhase||!sameQ){
-      if(data.phase==='waiting') showWaiting();
-      else renderQuestion(data.question,data.phase,!sameQ);
+    // ✅ FIX #1: Waiting — full reset
+    if(data.phase==='waiting'){
+      if(isNewPh) showWaiting();
     }
 
-    // Start/update timer when question phase is active
-    if(data.phase==='question'&&data.timerStarted>0){
-      if(data.timerStarted!==timerStarted||!sameQ){
+    // Question phase
+    else if(data.phase==='question'){
+      renderQuestion(data.question, data.phase, isNewQ);
+      // Start timer only when it changes or question changes
+      if(data.timerStarted&&data.timerStarted>0&&(data.timerStarted!==timerStarted||isNewQ)){
         startTimer(data.timerDuration,data.timerStarted,data.serverTime);
       }
     }
+
+    // Reveal phase
+    else if(data.phase==='reveal'){
+      // Make sure the question is rendered first (handles reveal on page load/refresh)
+      if(data.question){
+        renderQuestion(data.question, data.phase, isNewQ);
+      }
+    }
+
     lastPhase=data.phase;
-  }catch(e){document.getElementById('status-dot').className='status-dot error'}
+  }catch(e){
+    document.getElementById('status-dot').className='status-dot error';
+  }finally{
+    pollRunning=false;
+  }
 }
 
-if(API_URL==='YOUR_GAS_WEB_APP_URL_HERE'){
-  document.getElementById('ready-btn').textContent='⚠️ Set API_URL in the script block';
-  document.getElementById('ready-btn').style.background='#FF6A00';
-}else{poll();setInterval(poll,POLL_MS)}
+poll();
+setInterval(poll, POLL_MS);
 </script>
 </body>
 </html>
