@@ -819,6 +819,17 @@ function updateModePill(){
   var map={standard:{cls:'standard',txt:'📝 Standard Mode'},team:{cls:'team',txt:'⚔️ Team Battle'},speed:{cls:'speed',txt:'⚡ Speed Battle'}};
   var m=map[mode]||map.standard;
   pill.className='mode-pill '+m.cls;pill.textContent=m.txt;
+  /* Navigate to correct screen for new mode */
+  if(mode==='standard'){
+    if(gs.state==='lobby')sc('s-lobby');
+    else handleStd(gs.state);
+  }
+  else if(mode==='team'){
+    handleTB();
+  }
+  else if(mode==='speed'){
+    handleSP();
+  }
 }
 
 
