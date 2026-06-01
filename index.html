@@ -5,7 +5,7 @@
 <title>IJA Quiz — Live Screen</title>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<!-- Auth not needed for audience -->
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Space+Grotesk:wght@400;600;700;800&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -417,15 +417,21 @@ input:focus{border-color:var(--gold)}
 <div class="ans-pill" id="ans-pill">Answered: <b id="ans-num">0</b>/<span id="ans-total">0</span></div>
 
 <script>
+/* ── SERVER TIME SYNC (global scope — critical for timer accuracy) ── */
+let _serverOffset = 0;
+function serverNow(){ return Date.now() + _serverOffset; }
+function initServerOffset(){
+  if(!db) return;
+  db.ref('/.info/serverTimeOffset').on('value', snap => { _serverOffset = snap.val() || 0; });
+}
+
 /* PARTICLE BG */
-(function(){const c=document.getElementById('bgc'),ctx=c.getContext('2d');let W,H,pts=[];let serverOffset = 0;
-function initServerOffset(){firebase.database().ref('/.info/serverTimeOffset').on('value',snap=>{serverOffset=snap.val()||0;});}
-function serverNow(){return Date.now()+serverOffset;}
+(function(){const c=document.getElementById('bgc'),ctx=c.getContext('2d');let W,H,pts=[];
 function resize(){W=c.width=innerWidth;H=c.height=innerHeight;pts=[];for(let i=0;i<120;i++)pts.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.6+.2,a:Math.random()*Math.PI*2,v:Math.random()*.25+.08,vx:(Math.random()-.5)*.09,vy:(Math.random()-.5)*.09,red:Math.random()<.3});}resize();addEventListener('resize',resize);function draw(){ctx.clearRect(0,0,W,H);pts.forEach(p=>{p.a+=p.v*.015;p.x+=p.vx;p.y+=p.vy;if(p.x<0)p.x=W;if(p.x>W)p.x=0;if(p.y<0)p.y=H;if(p.y>H)p.y=0;const alpha=.06+.18*Math.sin(p.a);ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=p.red?`rgba(192,21,42,${alpha})`:`rgba(200,210,240,${alpha*.5})`;ctx.fill();});requestAnimationFrame(draw);}draw();})();
 
 let db=null,timerInt=null,tbTimerInt=null,spTimerInt=null;
 let mode='standard',gs={state:'lobby'},players={};
-let tb={state:'lobby',teams:[{name:'Red Eagles',score:0},{name:'Blue Lions',score:0}],cq:null,activeTeam:0,isBonus:false,members:{}};
+let tb={state:'lobby',teams:[{name:'Red Eagles',score:0},{name:'Blue Lions',score:0}],cq:null,lock:null,activeTeam:0,isBonus:false,members:{}};
 let sp={state:'lobby',activePid:null,session:null,players:{}};
 let lastSpSessionId=null,lastSpQIdx=-1;
 const CIRC=270.2,TBCIRC=238.8,ALPHA=['A','B','C','D'];
@@ -464,24 +470,27 @@ function setupListeners(){
     if(['leaderboard','section_leaderboard'].includes(gs.state))renderLB();
     if(gs.state==='ended')renderEnded();
   });
-  db.ref('quiz/tb').on('value',s=>{const d=s.val();if(!d)return;tb.state=d.state||'lobby';tb.teams=toArray(d.teams)||tb.teams;tb.cq=d.cq||null;tb.activeTeam=d.activeTeam??0;tb.isBonus=!!d.isBonus;tb.members=d.members||{};if(mode==='team')handleTB();});
+  db.ref('quiz/tb').on('value',s=>{const d=s.val();if(!d)return;tb.state=d.state||'lobby';tb.teams=toArray(d.teams)||tb.teams;tb.cq=d.cq||null;tb.lock=d.lock||null;tb.activeTeam=d.activeTeam??0;tb.isBonus=!!d.isBonus;tb.members=d.members||{};if(mode==='team')handleTB();});
   db.ref('quiz/sp').on('value',s=>{const d=s.val();if(!d)return;sp.state=d.state||'lobby';sp.activePid=d.activePid||null;sp.session=d.session||null;sp.players=d.players||{};if(mode==='speed')handleSP();});
 }
 
 function updateModePill(){const pill=el('lobby-mode-pill');const m={standard:{cls:'standard',txt:'📝 Standard Mode'},team:{cls:'team',txt:'⚔️ Team Battle'},speed:{cls:'speed',txt:'⚡ Speed Battle'}}[mode]||{cls:'standard',txt:'📝 Standard Mode'};pill.className='mode-pill '+m.cls;pill.textContent=m.txt;}
 
-/* STANDARD */
+/* STANDARD + UNIVERSAL STATES */
 function handleStd(state){
-  if(mode!=='standard')return;gs.state=state;
+  gs.state=state;
+  /* Universal states — handle regardless of current mode */
+  if(state==='ended'){clearTimer();clearTBTimer();clearSPTimer();renderEnded();sc('s-ended');return;}
+  if(state==='leaderboard'){clearTimer();t('lb-title','Leaderboard');renderLB();sc('s-lb');return;}
+  if(state==='section_leaderboard'){clearTimer();t('lb-title','Section Leaderboard');renderLB();sc('s-lb');return;}
+  /* Standard-only states */
+  if(mode!=='standard')return;
   el('ans-pill').style.display=state==='question_active'?'block':'none';
   if(state==='lobby'){clearTimer();sc('s-lobby');}
   else if(state==='section_intro'){clearTimer();renderSecIntro();sc('s-section');}
   else if(state==='question_active'){renderStdQ();sc('s-question');}
   else if(state==='time_up'){clearTimer();if(gs.cq)renderStdReveal();sc('s-question');}
   else if(state==='reveal'){clearTimer();if(gs.cq)renderStdReveal();sc('s-question');}
-  else if(state==='section_leaderboard'){clearTimer();t('lb-title','Section Leaderboard');renderLB();sc('s-lb');}
-  else if(state==='leaderboard'){clearTimer();t('lb-title','Leaderboard');renderLB();sc('s-lb');}
-  else if(state==='ended'){clearTimer();renderEnded();sc('s-ended');}
 }
 function renderSecIntro(){const i=gs.intro||{};t('sec-name',i.name||'Section');t('sec-meta',(i.totalQ||0)+' questions — get ready!');}
 function renderStdQ(){
