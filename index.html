@@ -326,6 +326,7 @@ input:focus{border-color:var(--gold)}
     <div class="ti-h" id="ti-h">Team Battle</div>
     <div style="font-size:1rem;color:var(--text2)" id="ti-sub">Standing by…</div>
     <div class="ti-score-row" id="ti-score-row"></div>
+    <div id="ti-rosters" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;width:100%;max-width:600px;margin-top:12px"></div>
   </div>
 </div>
 
@@ -546,7 +547,34 @@ function handleTB(){
   else if(state==='reveal'){clearTBTimer();applyTBReveal();sc('s-team');}
   else if(state==='ended'){sc('s-ended');}
 }
-function renderTBIdle(h,sub){t('ti-h',h);el('ti-sub').textContent=sub;el('ti-score-row').innerHTML=tb.teams.map((t2,i)=>`<div class="ti-sc t${i}"><div class="ti-sc-name">${esc(t2.name)}</div><div class="ti-sc-score">${t2.score||0}</div><div style="font-size:.75rem;color:var(--text2)">marks</div></div>`).join('');}
+function renderTBIdle(h,sub){
+  t('ti-h',h);el('ti-sub').textContent=sub;
+  el('ti-score-row').innerHTML=tb.teams.map(function(t2,i){
+    return '<div class="ti-sc t'+i+'"><div class="ti-sc-name">'+esc(t2.name)+'</div><div class="ti-sc-score">'+(t2.score||0)+'</div><div style="font-size:.75rem;color:var(--text2)">marks</div></div>';
+  }).join('');
+  /* Team rosters */
+  var members=tb.members||{};
+  var t0=[],t1=[];
+  Object.keys(members).forEach(function(pid){
+    var m=members[pid];
+    if(m.team===0)t0.push(m.name||'?');
+    else if(m.team===1)t1.push(m.name||'?');
+  });
+  var rosters=el('ti-rosters');
+  if(rosters&&(t0.length||t1.length)){
+    rosters.innerHTML=[0,1].map(function(ti){
+      var list=ti===0?t0:t1;
+      var col=ti===0?'rgba(232,25,47,.12)':'rgba(37,99,235,.12)';
+      var bdr=ti===0?'rgba(232,25,47,.3)':'rgba(37,99,235,.3)';
+      var tc=ti===0?'#ff8080':'#60a5fa';
+      return '<div style="background:'+col+';border:1px solid '+bdr+';border-radius:14px;padding:12px"><div style="font-size:.75rem;font-weight:800;color:'+tc+';margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;font-family:\'JetBrains Mono\',monospace">'+esc(tb.teams[ti].name)+' ('+list.length+')</div>'
+        +(list.length?list.map(function(n){return '<div style="font-size:.85rem;font-weight:600;padding:3px 0;color:var(--text)">'+esc(n)+'</div>';}).join(''):'<div style="font-size:.8rem;color:var(--text2)">No members</div>')
+        +'</div>';
+    }).join('');
+  } else if(rosters){
+    rosters.innerHTML='';
+  }
+}
 function renderTBQ(){
   const q=tb.cq;if(!q)return;const tIdx=tb.activeTeam,isBonus=tb.isBonus,tn=tb.teams[tIdx]?.name||'?';
   el('team-hdr').className='team-hdr '+(isBonus?'bonus':'t'+tIdx);
