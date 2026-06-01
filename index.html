@@ -256,7 +256,7 @@ input:focus{border-color:var(--gold)}
 <body>
 <canvas id="bgc"></canvas>
 
-<div class="screen on" id="s-setup">
+<div class="screen" id="s-setup">
   <div class="setup-wrap">
     <div style="font-size:2.5rem;text-align:center;margin-bottom:10px">📺</div>
     <h1>Audience Screen</h1><p>Connect once — this becomes your live display.</p>
@@ -269,8 +269,7 @@ input:focus{border-color:var(--gold)}
   </div>
 </div>
 
-<div class="screen" id="s-lobby">
-  <div class="stripe top"></div><div class="stripe bottom"></div>
+<div class="screen on" id="s-lobby">  <div class="stripe top"></div><div class="stripe bottom"></div>
   <div class="orb" style="width:450px;height:450px;background:radial-gradient(circle,rgba(192,21,42,.18),transparent);top:-120px;left:-100px;animation-duration:12s"></div>
   <div class="orb" style="width:320px;height:320px;background:radial-gradient(circle,rgba(122,10,24,.22),transparent);bottom:-80px;right:-80px;animation-duration:9s"></div>
   <div class="lobby-center">
@@ -447,21 +446,24 @@ function toArray(val){if(!val)return[];if(Array.isArray(val))return val;return O
 
 /* SETUP */
 /* ── FIREBASE — hardcoded config ── */
-var firebaseConfig={
-  apiKey:"AIzaSyB_BeXdQFOPUVJLL59OWnLFC61_zs62oLs",
-  authDomain:"ija-maths-quiz.firebaseapp.com",
-  databaseURL:"https://ija-maths-quiz-default-rtdb.firebaseio.com",
-  projectId:"ija-maths-quiz",
-  storageBucket:"ija-maths-quiz.firebasestorage.app",
-  messagingSenderId:"940095816285",
-  appId:"1:940095816285:web:a6fb99604427346eef83b4"
-};
-firebase.initializeApp(firebaseConfig);
-db=firebase.database();
-initServerOffset();
-/* Auto-start listeners immediately — no setup screen needed */
-setupListeners();
-sc('s-lobby');
+try{
+  var firebaseConfig={
+    apiKey:"AIzaSyB_BeXdQFOPUVJLL59OWnLFC61_zs62oLs",
+    authDomain:"ija-maths-quiz.firebaseapp.com",
+    databaseURL:"https://ija-maths-quiz-default-rtdb.firebaseio.com",
+    projectId:"ija-maths-quiz",
+    storageBucket:"ija-maths-quiz.firebasestorage.app",
+    messagingSenderId:"940095816285",
+    appId:"1:940095816285:web:a6fb99604427346eef83b4"
+  };
+  firebase.initializeApp(firebaseConfig);
+  db=firebase.database();
+  try{initServerOffset();}catch(e){}
+  setupListeners();
+}catch(e){
+  console.error('Firebase init failed:',e);
+}
+/* Lobby shows by default via class="screen on" */
 
 /* LISTENERS */
 function setupListeners(){
