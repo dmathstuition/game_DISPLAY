@@ -446,12 +446,22 @@ function sv(id,v){const e=el(id);if(e)e.value=v;}
 function toArray(val){if(!val)return[];if(Array.isArray(val))return val;return Object.keys(val).sort((a,b)=>Number(a)-Number(b)).map(k=>val[k]);}
 
 /* SETUP */
-function getCfg(){return JSON.parse(localStorage.getItem('ija_cfg')||'null');}
-function loadCfgInputs(){const c=getCfg();if(!c)return;sv('cfg-key',c.apiKey||'');sv('cfg-db',c.databaseURL||'');sv('cfg-pid',c.projectId||'');sv('cfg-auth',c.authDomain||'');}
-function connectAndLaunch(){const c={apiKey:gv('cfg-key'),databaseURL:gv('cfg-db'),projectId:gv('cfg-pid'),authDomain:gv('cfg-auth')};if(!c.apiKey||!c.databaseURL){cfgMsg('Enter API Key and Database URL','e');return;}localStorage.setItem('ija_cfg',JSON.stringify(c));initFB(c);}
-function cfgMsg(msg,t2){const e=el('cfg-msg');e.style.display='block';e.className='cfg-msg '+(t2==='s'?'cfg-ok':'cfg-err');e.textContent=msg;}
-function initFB(cfg){try{if(firebase.apps.length)firebase.app().delete().then(()=>startFB(cfg));else startFB(cfg);}catch(e){startFB(cfg);}}
-function startFB(cfg){try{firebase.initializeApp(cfg);db=firebase.database();initServerOffset();cfgMsg('✓ Connected…','s');setTimeout(setupListeners,500);}catch(e){cfgMsg('Error: '+e.message,'e');}}
+/* ── FIREBASE — hardcoded config ── */
+var firebaseConfig={
+  apiKey:"AIzaSyB_BeXdQFOPUVJLL59OWnLFC61_zs62oLs",
+  authDomain:"ija-maths-quiz.firebaseapp.com",
+  databaseURL:"https://ija-maths-quiz-default-rtdb.firebaseio.com",
+  projectId:"ija-maths-quiz",
+  storageBucket:"ija-maths-quiz.firebasestorage.app",
+  messagingSenderId:"940095816285",
+  appId:"1:940095816285:web:a6fb99604427346eef83b4"
+};
+firebase.initializeApp(firebaseConfig);
+var db=firebase.database();
+initServerOffset();
+/* Auto-start listeners immediately — no setup screen needed */
+setupListeners();
+sc('s-lobby');
 
 /* LISTENERS */
 function setupListeners(){
@@ -614,7 +624,7 @@ function renderEnded(){
 }
 
 /* INIT */
-(function(){loadCfgInputs();const c=getCfg();if(c){cfgMsg('Reconnecting…','s');initFB(c);}else sc('s-setup');})();
+/* Firebase auto-connected above — no manual init needed */
 </script>
 </body>
 </html>
