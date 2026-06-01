@@ -251,6 +251,93 @@ input:focus{border-color:var(--gold)}
 .p1 .pd-block{height:145px;background:linear-gradient(180deg,rgba(245,197,24,.28),rgba(245,197,24,.08));border:2px solid rgba(245,197,24,.5)}
 .p2 .pd-block{height:105px;background:linear-gradient(180deg,rgba(148,163,184,.18),rgba(148,163,184,.04));border:2px solid rgba(148,163,184,.3)}
 .p3 .pd-block{height:78px;background:linear-gradient(180deg,rgba(205,127,50,.18),rgba(205,127,50,.04));border:2px solid rgba(205,127,50,.3)}
+
+/* ═══ CINEMATIC VISUAL ENHANCEMENTS ═══ */
+
+/* Animated background gradient sweep */
+body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse 60% 40% at 50% 0%,rgba(192,21,42,.08),transparent 70%);animation:bgPulse 8s ease-in-out infinite alternate}
+@keyframes bgPulse{0%{opacity:.5;transform:scale(1)}100%{opacity:1;transform:scale(1.1)}}
+
+/* Lobby — school crest dramatic glow */
+.crest-ico{text-shadow:0 0 40px rgba(192,21,42,.4)}
+.lobby-title .w1{animation:goldShimmer 3s ease-in-out infinite alternate}
+@keyframes goldShimmer{0%{text-shadow:0 0 80px rgba(245,197,24,.3),0 4px 40px rgba(0,0,0,.8)}100%{text-shadow:0 0 120px rgba(245,197,24,.5),0 4px 40px rgba(0,0,0,.8)}}
+.player-badge{box-shadow:0 0 30px rgba(34,197,94,.1);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+
+/* Question screen — dramatic entrance */
+.q-text-wrap{box-shadow:0 8px 40px rgba(0,0,0,.4),0 0 60px rgba(192,21,42,.06);transition:box-shadow .3s}
+.q-text-big{animation:textReveal .6s cubic-bezier(.16,1,.3,1) both}
+@keyframes textReveal{from{opacity:0;transform:translateY(12px) scale(.98);filter:blur(4px)}to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
+
+/* Option cards — cinematic entrance */
+.opt-card{box-shadow:0 4px 20px rgba(0,0,0,.3);transition:transform .2s cubic-bezier(.4,0,.2,1),box-shadow .2s}
+.opt-card:hover{transform:translateY(-2px) scale(1.01);box-shadow:0 8px 32px rgba(0,0,0,.4)}
+.opt-card.rv-ok{animation:revealGlow .6s ease both!important}
+@keyframes revealGlow{0%{transform:scale(1)}40%{transform:scale(1.04)}100%{transform:scale(1.02)}}
+
+/* Timer ring — enhanced urgency glow */
+.tc-prog{filter:drop-shadow(0 0 6px currentColor)}
+.tc-glow{filter:blur(3px)}
+
+/* Stat bars — smooth fill animation */
+.stat-fill{transition:width .8s cubic-bezier(.4,0,.2,1)!important}
+
+/* Section intro — dramatic reveal */
+.sec-name-big{animation:secReveal .7s cubic-bezier(.16,1,.3,1) both!important}
+@keyframes secReveal{from{opacity:0;transform:scale(.7) translateY(30px);filter:blur(8px)}to{opacity:1;transform:scale(1) translateY(0);filter:blur(0)}}
+.sec-divider{box-shadow:0 0 20px rgba(192,21,42,.3)}
+
+/* Leaderboard — staggered entrance with glow */
+.lb-row{box-shadow:0 2px 16px rgba(0,0,0,.3);transition:transform .15s,box-shadow .15s}
+.lb-row:nth-child(1){box-shadow:0 0 40px rgba(245,197,24,.12),0 4px 20px rgba(0,0,0,.3)}
+.lb-row:hover{transform:translateX(4px)}
+.lb-score{text-shadow:0 0 12px rgba(245,197,24,.4)}
+
+/* Team idle — rosters glassmorphism */
+#ti-rosters>div{backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 4px 20px rgba(0,0,0,.2)}
+
+/* Team question — header glow line */
+.team-hdr::after{content:'';position:absolute;bottom:-1px;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,rgba(245,197,24,.3),transparent)}
+
+/* Team score cards — glow effect */
+.tsc{box-shadow:0 2px 16px rgba(0,0,0,.2);transition:transform .2s,box-shadow .2s}
+.tsc.active-t{box-shadow:0 0 30px rgba(245,197,24,.15)!important;transform:scale(1.02)}
+.tsc-score{text-shadow:0 0 20px rgba(245,197,24,.3)}
+
+/* Speed battle — runner badge pulse */
+.sp-runner-badge{animation:runnerPulse 2s ease-in-out infinite}
+@keyframes runnerPulse{0%,100%{box-shadow:0 0 0 0 rgba(249,115,22,.3)}50%{box-shadow:0 0 0 8px rgba(249,115,22,0)}}
+
+/* Speed timer — urgency glow */
+.spt-prog{filter:drop-shadow(0 0 4px currentColor)}
+
+/* Ended — trophy entrance */
+.trophy-big{filter:drop-shadow(0 0 60px rgba(245,197,24,.5)) drop-shadow(0 0 120px rgba(245,197,24,.2))!important}
+.ended-title{text-shadow:0 0 80px rgba(245,197,24,.3),0 4px 30px rgba(0,0,0,.8)}
+
+/* Podium blocks — glow effects */
+.p1 .pd-block{box-shadow:0 0 40px rgba(245,197,24,.15),0 -4px 20px rgba(245,197,24,.08)}
+.p2 .pd-block{box-shadow:0 0 30px rgba(148,163,184,.1)}
+.p3 .pd-block{box-shadow:0 0 25px rgba(205,127,50,.1)}
+.pd-score{text-shadow:0 0 12px rgba(245,197,24,.4)}
+
+/* Stripe glow enhancement */
+.stripe{box-shadow:0 0 20px rgba(192,21,42,.2)}
+
+/* Orbs enhanced glow */
+.orb{mix-blend-mode:screen}
+
+/* Speed idle bolt dramatic glow */
+.sp-idle-bolt{text-shadow:0 0 60px rgba(249,115,22,.5),0 0 120px rgba(249,115,22,.2)}
+
+/* Answer pill glassmorphism */
+.ans-pill{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:0 4px 16px rgba(0,0,0,.3)}
+
+/* Mute & sound buttons */
+#aud-mute{transition:all .2s;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+#aud-mute:hover{background:rgba(4,9,15,.95);border-color:rgba(192,21,42,.5);color:var(--text)}
+#aud-start-sound{animation:soundBtnPulse 2s ease-in-out infinite}
+@keyframes soundBtnPulse{0%,100%{box-shadow:0 0 60px rgba(192,21,42,.5)}50%{box-shadow:0 0 90px rgba(192,21,42,.7),0 0 0 12px rgba(192,21,42,0)}}
 </style>
 </head>
 <body>
