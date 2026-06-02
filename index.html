@@ -1082,11 +1082,23 @@ function clearSPTimer(){clearInterval(spTimerInt);spTimerInt=null;}
 /* LEADERBOARD */
 function renderLB(){
   if(mode==='team'){renderTBLeaderboard();return;}
+  if(mode==='speed'){renderSpeedLeaderboard();return;}
   var sorted=Object.values(players).sort(function(a,b){return (b.score||0)-(a.score||0);});
   var top=sorted.slice(0,10);var grid=el('lb-grid');
   grid.className='lb-grid'+(top.length<=5?' single':'');
   grid.innerHTML=top.map(function(p,i){
     return '<div class="lb-row" style="animation-delay:'+i*0.07+'s"><div class="lb-rank">'+(MEDALS[i]||(i+1))+'</div><div class="lb-avatar">'+(p.name||'?').charAt(0).toUpperCase()+'</div><div class="lb-name">'+esc(p.name||'?')+'</div><div class="lb-score">'+(p.score||0)+'</div></div>';
+  }).join('');
+}
+function renderSpeedLeaderboard(){
+  var spPlayers=sp.players||{};
+  var sorted=Object.values(spPlayers).sort(function(a,b){return (b.score||0)-(a.score||0);});
+  var top=sorted.slice(0,10);var grid=el('lb-grid');
+  grid.className='lb-grid'+(top.length<=5?' single':'');
+  grid.innerHTML=top.map(function(p,i){
+    var total=p.total||20;
+    var pct=total>0?Math.round(((p.score||0)/total)*100):0;
+    return '<div class="lb-row" style="animation-delay:'+i*0.07+'s"><div class="lb-rank">'+(MEDALS[i]||(i+1))+'</div><div class="lb-avatar">'+(p.name||'?').charAt(0).toUpperCase()+'</div><div class="lb-name">'+esc(p.name||'?')+'</div><div class="lb-score">'+(p.score||0)+'/'+total+' <span style="font-size:.7rem;color:var(--text2)">('+pct+'%)</span></div></div>';
   }).join('');
 }
 function renderTBLeaderboard(){
@@ -1102,6 +1114,8 @@ function renderEnded(){
   var sorted=[];
   if(mode==='team'){
     sorted=tb.teams.map(function(t2,i){return{name:t2.name,score:t2.score||0,idx:i};}).sort(function(a,b){return b.score-a.score;});
+  }else if(mode==='speed'){
+    sorted=Object.values(sp.players||{}).sort(function(a,b){return(b.score||0)-(a.score||0);});
   }else{
     sorted=Object.values(players).sort(function(a,b){return(b.score||0)-(a.score||0);});
   }
