@@ -402,6 +402,7 @@ body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;bac
     <div class="q-text-wrap"><div class="q-text-big" id="aud-q-text"></div></div>
     <div class="opts-grid" id="aud-opts"></div>
     <div class="stats-row" id="aud-stats" style="display:none"></div>
+    <div id="fastest-spot" style="display:none;align-items:center;justify-content:center;padding:12px 24px;background:rgba(245,197,24,.08);border:1px solid rgba(245,197,24,.25);border-radius:14px;margin-top:8px;backdrop-filter:blur(8px)"></div>
   </div>
 </div>
 
@@ -491,11 +492,13 @@ body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;bac
 </div>
 
 <div class="screen" id="s-ended">
+  <canvas id="confetti-canvas" style="position:absolute;inset:0;z-index:2;pointer-events:none"></canvas>
   <div class="stripe top"></div>
   <div class="orb" style="width:700px;height:400px;background:radial-gradient(ellipse,rgba(192,21,42,.16),transparent);top:-120px;left:50%;transform:translateX(-50%);animation-duration:10s"></div>
-  <div class="ended-wrap">
+  <div class="ended-wrap" style="z-index:3">
     <div class="trophy-big">🏆</div>
     <div class="ended-title">Competition<br>Complete!</div>
+    <div id="winner-spotlight" style="display:none;font-size:1.6rem;font-weight:900;font-family:'Nunito',sans-serif;text-align:center;animation:fadeUp .6s ease .3s both"></div>
     <div class="ended-sub">Congratulations to all IJA competitors</div>
     <div class="podium" id="podium"></div>
   </div>
@@ -944,6 +947,7 @@ function renderStdQ(){
   t('aud-q-sec',secName);
   var qel=el('aud-q-text');qel.textContent=q.text;qel.className='q-text-big'+(q.text.length>80?' long':'');
   el('aud-stats').style.display='none';
+  var fs=el('fastest-spot');if(fs)fs.style.display='none';
   el('aud-opts').innerHTML=ALPHA.map(function(o){return '<div class="opt-card '+o+'" id="aoc-'+o+'"><div class="opt-icon">'+o+'</div><div class="opt-txt">'+esc(q.options[o])+'</div></div>';}).join('');
   startStdTimer(q.timeLimit,q.startTime);
   sfxQuestionAppear();
@@ -954,6 +958,26 @@ function renderStdReveal(){
   ALPHA.forEach(function(o){var e=el('aoc-'+o);if(!e)return;e.classList.add(o===c?'rv-ok':'rv-no');});
   el('tc-num').textContent='✓';el('tc-num').style.color='var(--green)';el('tc-ring').style.stroke='var(--green)';el('tc-ring').style.strokeDashoffset='0';el('tc-glow').style.strokeDashoffset='0';el('pb').style.width='100%';el('pb').style.background='linear-gradient(90deg,#065f46,var(--green))';
   renderStatBars();el('aud-stats').style.display='grid';
+  /* Fastest answer spotlight */
+  showFastestAnswer(c);
+}
+function showFastestAnswer(correct){
+  var fastest=null, highPts=0;
+  Object.keys(players).forEach(function(pid){
+    var p=players[pid];
+    if(p.lastAnswer===correct&&(p.pointsEarned||0)>highPts){
+      highPts=p.pointsEarned;fastest=p;
+    }
+  });
+  var spot=el('fastest-spot');
+  if(!spot) return;
+  if(fastest&&highPts>0){
+    spot.innerHTML='<span style="font-size:1.4rem;margin-right:8px">⚡</span><span style="font-weight:800;font-size:1.1rem;color:var(--gold)">'+esc(fastest.name)+'</span><span style="margin-left:10px;color:var(--green);font-family:\'JetBrains Mono\',monospace;font-weight:800">+'+highPts+' pts</span><span style="margin-left:6px;color:var(--text2);font-size:.82rem">fastest answer</span>';
+    spot.style.display='flex';
+    spot.style.animation='fadeUp .5s ease both';
+  } else {
+    spot.style.display='none';
+  }
 }
 function renderStatBars(){
   var counts={A:0,B:0,C:0,D:0};Object.values(players).forEach(function(p){if(p.lastAnswer&&counts[p.lastAnswer]!==undefined)counts[p.lastAnswer]++;});
@@ -1088,6 +1112,64 @@ function renderEnded(){
     var ci=order.indexOf(idx);
     return '<div class="pd-col '+cls[ci]+'"><div class="pd-name">'+esc(p.name||'?')+'</div><div class="pd-score">'+(p.score||0)+'</div><div class="pd-block">'+medals[ci]+'</div></div>';
   }).join('');
+  /* Winner spotlight */
+  var ws=el('winner-spotlight');
+  if(ws&&top3[0]){
+    ws.style.display='block';
+    ws.innerHTML='<span style="color:var(--gold)">🏆 '+esc(top3[0].name)+'</span><br><span style="font-size:1rem;color:var(--text2)">Champion — '+(top3[0].score||0)+' points</span>';
+  }
+  /* Confetti burst */
+  launchConfetti();
+}
+
+/* ═══ CONFETTI ENGINE ═══ */
+function launchConfetti(){
+  var canvas=document.getElementById('confetti-canvas');
+  if(!canvas)return;
+  var ctx=canvas.getContext('2d');
+  canvas.width=window.innerWidth;
+  canvas.height=window.innerHeight;
+  var pieces=[];
+  var colors=['#f5c518','#e8192f','#22c55e','#3b82f6','#a855f7','#f97316','#ec4899','#fff'];
+  for(var i=0;i<200;i++){
+    pieces.push({
+      x:Math.random()*canvas.width,
+      y:Math.random()*canvas.height*-1.5,
+      w:Math.random()*10+5,
+      h:Math.random()*6+3,
+      color:colors[Math.floor(Math.random()*colors.length)],
+      vx:(Math.random()-0.5)*4,
+      vy:Math.random()*4+2,
+      rot:Math.random()*360,
+      rv:(Math.random()-0.5)*8,
+      opacity:1
+    });
+  }
+  var startTime=Date.now();
+  function draw(){
+    var elapsed=(Date.now()-startTime)/1000;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    var active=false;
+    pieces.forEach(function(p){
+      p.x+=p.vx;
+      p.y+=p.vy;
+      p.vy+=0.08;
+      p.rot+=p.rv;
+      if(elapsed>3)p.opacity=Math.max(0,p.opacity-0.015);
+      if(p.opacity<=0||p.y>canvas.height+50)return;
+      active=true;
+      ctx.save();
+      ctx.translate(p.x,p.y);
+      ctx.rotate(p.rot*Math.PI/180);
+      ctx.globalAlpha=p.opacity;
+      ctx.fillStyle=p.color;
+      ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+      ctx.restore();
+    });
+    if(active)requestAnimationFrame(draw);
+    else ctx.clearRect(0,0,canvas.width,canvas.height);
+  }
+  draw();
 }
 
 /* INIT */
