@@ -338,6 +338,30 @@ body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;bac
 #aud-mute:hover{background:rgba(4,9,15,.95);border-color:rgba(192,21,42,.5);color:var(--text)}
 #aud-start-sound{animation:soundBtnPulse 2s ease-in-out infinite}
 @keyframes soundBtnPulse{0%,100%{box-shadow:0 0 60px rgba(192,21,42,.5)}50%{box-shadow:0 0 90px rgba(192,21,42,.7),0 0 0 12px rgba(192,21,42,0)}}
+
+/* ═══ QUESTION-SCREEN READABILITY CALM ═══
+   Motion marks transitions, then settles. During a live question the
+   background breathing and text blur compete with reading — so we gentle
+   the ambient motion and remove the blur flash on the projected question. */
+
+/* Gentler ambient breathing (redefine — last keyframes definition wins) */
+@keyframes bgPulse{0%{opacity:.45;transform:scale(1)}100%{opacity:.7;transform:scale(1.03)}}
+body::after{animation-duration:14s!important}
+
+/* Question text: keep the slide-up entrance but drop the blur — large
+   projected text must be crisp from the first frame it can be read */
+@keyframes textReveal{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.q-text-big{animation:textReveal .45s cubic-bezier(.16,1,.3,1) both}
+
+/* Static glow on the question wrap — no animated shimmer behind the text */
+.q-text-wrap{transition:none}
+
+/* Options: settle quickly, no lingering hover scaling on a projector */
+.opt-card{animation-duration:.32s}
+.opt-card:hover{transform:none}
+
+/* Timer ring stays crisp — glow layer softened so the number is the focus */
+.tc-glow{opacity:.5}
 </style>
 </head>
 <body>
