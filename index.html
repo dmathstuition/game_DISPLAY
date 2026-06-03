@@ -1023,6 +1023,8 @@ function clearTimer(){clearInterval(timerInt);timerInt=null;}
 
 /* TEAM BATTLE */
 function handleTB(){
+  /* Universal leaderboard/ended states take priority — don't override them */
+  if(gs.state==='leaderboard'||gs.state==='section_leaderboard'||gs.state==='ended')return;
   var state=tb.state;
   if(state==='lobby'||state==='idle'){stopSFXTicking();renderTBIdle('Team Battle','Standing by for next question…');sc('s-team-idle');sfxLobbyPulse();}
   else if(state==='active'){renderTBQ();sc('s-team');sfxQuestionAppear();startSFXTicking(tb.cq?tb.cq.timeLimit:30,tb.cq?tb.cq.startTime:serverNow());}
@@ -1072,6 +1074,8 @@ function clearTBTimer(){clearInterval(tbTimerInt);tbTimerInt=null;}
 
 /* SPEED BATTLE */
 function handleSP(){
+  /* Universal leaderboard/ended states take priority */
+  if(gs.state==='leaderboard'||gs.state==='section_leaderboard'||gs.state==='ended')return;
   if(sp.state==='running'&&sp.session&&sp.activePid){
     var sess=sp.session;
     var runner=sp.players?sp.players[sp.activePid]:null;
