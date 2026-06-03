@@ -342,6 +342,7 @@ body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;bac
 </head>
 <body>
 <canvas id="bgc"></canvas>
+<div id="broadcast-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:500;background:linear-gradient(135deg,#1e40af,#2563eb);color:#fff;padding:18px 24px;font-size:1.4rem;font-weight:800;text-align:center;box-shadow:0 4px 30px rgba(0,0,0,.5);letter-spacing:.5px"></div>
 
 <div class="screen" id="s-setup">
   <div class="setup-wrap">
@@ -869,6 +870,11 @@ try{
 /* LISTENERS */
 function setupListeners(){
   db.ref('quiz/mode').on('value',function(s){mode=s.val()||'standard';updateModePill();});
+  db.ref('quiz/broadcast').on('value',function(s){
+    var b=s.val();var banner=el('broadcast-banner');if(!banner)return;
+    if(b&&b.text&&b.text.trim()){banner.textContent='📢 '+b.text;banner.style.display='block';}
+    else{banner.style.display='none';}
+  });
   db.ref('quiz/state').on('value',function(s){handleStd(s.val()||'lobby');});
   db.ref('quiz/currentQuestion').on('value',function(s){gs.cq=s.val();if(gs.state==='question_active')renderStdQ();if(gs.state==='reveal'||gs.state==='time_up')renderStdReveal();});
   db.ref('quiz/sectionIntro').on('value',function(s){gs.intro=s.val();if(gs.state==='section_intro')renderSecIntro();});
