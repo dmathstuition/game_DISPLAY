@@ -62,6 +62,7 @@ input:focus{border-color:var(--gold)}
 .mode-pill.standard{background:rgba(37,99,235,.12);border-color:rgba(37,99,235,.4);color:#60a5fa}
 .mode-pill.team{background:rgba(232,25,47,.12);border-color:rgba(232,25,47,.4);color:#ff8080}
 .mode-pill.speed{background:rgba(249,115,22,.12);border-color:rgba(249,115,22,.4);color:var(--orange)}
+.mode-pill.oral{background:rgba(168,85,247,.12);border-color:rgba(168,85,247,.4);color:#c084fc}
 
 /* SECTION INTRO */
 #s-section{background:radial-gradient(ellipse 140% 100% at 50% -5%,#1a0530,var(--bg))}
@@ -505,6 +506,35 @@ body::after{animation-duration:14s!important}
   </div>
 </div>
 
+<div class="screen" id="s-oral">
+  <div class="stripe top"></div>
+  <div class="orb" style="width:600px;height:340px;background:radial-gradient(ellipse,rgba(168,85,247,.14),transparent);top:-90px;left:50%;transform:translateX(-50%);animation-duration:12s"></div>
+  <div style="position:relative;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;width:100%;max-width:900px;margin:0 auto;padding:30px;text-align:center">
+    <div style="font-size:1rem;letter-spacing:4px;text-transform:uppercase;color:#c084fc;font-weight:700;margin-bottom:20px"><i class="fa-solid fa-microphone"></i> Oral Round</div>
+    <!-- Active contestant -->
+    <div id="oral-active-card" style="display:none;flex-direction:column;align-items:center;gap:14px">
+      <div style="width:130px;height:130px;border-radius:50%;background:linear-gradient(135deg,#a855f7,#6d28d9);display:flex;align-items:center;justify-content:center;font-size:3.6rem;font-weight:900;color:#fff;box-shadow:0 0 50px rgba(168,85,247,.5)" id="oral-num-big">1</div>
+      <div style="font-size:2.4rem;font-weight:900;color:#fff" id="oral-name-big">Name</div>
+      <div id="oral-q-big" style="font-size:1.5rem;color:var(--text2);max-width:780px;line-height:1.4;margin-top:8px"></div>
+    </div>
+    <!-- Result reveal -->
+    <div id="oral-result-card" style="display:none;flex-direction:column;align-items:center;gap:16px">
+      <div id="oral-result-icon" style="font-size:5rem"></div>
+      <div id="oral-result-verdict" style="font-size:3rem;font-weight:900"></div>
+      <div id="oral-result-name" style="font-size:1.6rem;color:var(--text2)"></div>
+      <div id="oral-result-score" style="font-family:'JetBrains Mono',monospace;font-size:1.3rem;font-weight:800"></div>
+    </div>
+    <!-- Idle -->
+    <div id="oral-idle-card" style="display:none;flex-direction:column;align-items:center;gap:10px">
+      <div style="font-size:4rem">🎤</div>
+      <div style="font-size:1.8rem;font-weight:800;color:#fff">Oral Round</div>
+      <div style="font-size:1.1rem;color:var(--text2)">Waiting for the next contestant…</div>
+    </div>
+    <!-- Standings strip -->
+    <div id="oral-standings-strip" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:34px;max-width:840px"></div>
+  </div>
+</div>
+
 <div class="screen" id="s-lb">
   <div class="stripe top"></div>
   <div class="orb" style="width:600px;height:300px;background:radial-gradient(ellipse,rgba(192,21,42,.1),transparent);top:-80px;left:50%;transform:translateX(-50%);animation-duration:12s"></div>
@@ -852,6 +882,7 @@ let db=null,timerInt=null,tbTimerInt=null,spTimerInt=null;
 let mode='standard',gs={state:'lobby'},players={};
 let tb={state:'lobby',teams:[{name:'Red Eagles',score:0},{name:'Blue Lions',score:0}],cq:null,lock:null,activeTeam:0,isBonus:false,members:{}};
 let sp={state:'lobby',activePid:null,session:null,players:{}};
+let oral={state:'idle',contestants:{},activeCid:null,question:null,lastResult:null};
 let lastSpSessionId=null,lastSpQIdx=-1;
 const CIRC=270.2,TBCIRC=238.8,ALPHA=['A','B','C','D'];
 const MEDALS=['🥇','🥈','🥉'];
@@ -894,6 +925,15 @@ try{
 /* LISTENERS */
 function setupListeners(){
   db.ref('quiz/mode').on('value',function(s){mode=s.val()||'standard';updateModePill();});
+  db.ref('quiz/oral').on('value',function(s){
+    var d=s.val()||{};
+    oral.contestants=d.contestants||{};
+    oral.activeCid=d.activeCid||null;
+    oral.state=d.state||'idle';
+    oral.question=d.question||null;
+    oral.lastResult=d.lastResult||null;
+    if(mode==='oral')handleOral();
+  });
   db.ref('quiz/broadcast').on('value',function(s){
     var b=s.val();var banner=el('broadcast-banner');if(!banner)return;
     if(b&&b.text&&b.text.trim()){banner.textContent='📢 '+b.text;banner.style.display='block';}
@@ -936,7 +976,7 @@ function setupListeners(){
 
 function updateModePill(){
   var pill=el('lobby-mode-pill');
-  var map={standard:{cls:'standard',txt:'📝 Standard Mode'},team:{cls:'team',txt:'⚔️ Team Battle'},speed:{cls:'speed',txt:'⚡ Speed Battle'}};
+  var map={standard:{cls:'standard',txt:'📝 Standard Mode'},team:{cls:'team',txt:'⚔️ Team Battle'},speed:{cls:'speed',txt:'⚡ Speed Battle'},oral:{cls:'oral',txt:'🎤 Oral Round'}};
   var m=map[mode]||map.standard;
   pill.className='mode-pill '+m.cls;pill.textContent=m.txt;
   /* Navigate to correct screen for new mode */
@@ -949,6 +989,9 @@ function updateModePill(){
   }
   else if(mode==='speed'){
     handleSP();
+  }
+  else if(mode==='oral'){
+    handleOral();
   }
 }
 
@@ -1117,6 +1160,7 @@ function clearSPTimer(){clearInterval(spTimerInt);spTimerInt=null;}
 function renderLB(){
   if(mode==='team'){renderTBLeaderboard();return;}
   if(mode==='speed'){renderSpeedLeaderboard();return;}
+  if(mode==='oral'){renderOralLeaderboard();return;}
   var sorted=Object.values(players).sort(function(a,b){return (b.score||0)-(a.score||0);});
   var top=sorted.slice(0,10);var grid=el('lb-grid');
   grid.className='lb-grid'+(top.length<=5?' single':'');
@@ -1143,6 +1187,63 @@ function renderTBLeaderboard(){
   }).join('');
 }
 
+/* ORAL ROUND */
+function handleOral(){
+  if(gs.state==='leaderboard'||gs.state==='section_leaderboard'||gs.state==='ended')return;
+  sc('s-oral');
+  var activeCard=el('oral-active-card'), resultCard=el('oral-result-card'), idleCard=el('oral-idle-card');
+  activeCard.style.display='none'; resultCard.style.display='none'; idleCard.style.display='none';
+  renderOralStandings();
+  if(oral.state==='reveal'&&oral.lastResult){
+    var r=oral.lastResult;
+    resultCard.style.display='flex';
+    if(r.correct){
+      el('oral-result-icon').textContent='🎉';
+      el('oral-result-verdict').textContent='CORRECT!';
+      el('oral-result-verdict').style.color='var(--green)';
+      el('oral-result-score').textContent='+'+r.points+' points  •  Total: '+r.newScore;
+      el('oral-result-score').style.color='var(--green)';
+      if(typeof sfxCorrect==='function')sfxCorrect();
+    }else{
+      el('oral-result-icon').textContent='❌';
+      el('oral-result-verdict').textContent='WRONG';
+      el('oral-result-verdict').style.color='var(--red-b)';
+      el('oral-result-score').textContent='No points  •  Total: '+r.newScore;
+      el('oral-result-score').style.color='var(--text2)';
+      if(typeof sfxWrong==='function')sfxWrong();
+    }
+    el('oral-result-name').textContent='#'+r.num+' — '+r.name;
+  }
+  else if(oral.state==='active'&&oral.activeCid&&oral.contestants[oral.activeCid]){
+    var c=oral.contestants[oral.activeCid];
+    activeCard.style.display='flex';
+    el('oral-num-big').textContent=c.num;
+    el('oral-name-big').textContent=c.name||'?';
+    var q=el('oral-q-big');
+    if(oral.question){q.textContent=oral.question;q.style.display='block';}
+    else q.style.display='none';
+  }
+  else{
+    idleCard.style.display='flex';
+  }
+}
+function renderOralStandings(){
+  var strip=el('oral-standings-strip');if(!strip)return;
+  var arr=Object.keys(oral.contestants||{}).map(function(cid){return oral.contestants[cid];})
+              .sort(function(a,b){return (b.score||0)-(a.score||0);}).slice(0,8);
+  strip.innerHTML=arr.map(function(c){
+    return '<div style="background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.25);border-radius:12px;padding:8px 14px;min-width:90px"><div style="font-size:.8rem;color:var(--text2)">#'+c.num+' '+esc((c.name||'').split(' ')[0])+'</div><div style="font-size:1.3rem;font-weight:900;color:#c084fc">'+(c.score||0)+'</div></div>';
+  }).join('');
+}
+function renderOralLeaderboard(){
+  var arr=Object.keys(oral.contestants||{}).map(function(cid){return oral.contestants[cid];})
+              .sort(function(a,b){return (b.score||0)-(a.score||0);}).slice(0,10);
+  var grid=el('lb-grid');grid.className='lb-grid'+(arr.length<=5?' single':'');
+  grid.innerHTML=arr.map(function(c,i){
+    return '<div class="lb-row" style="animation-delay:'+i*0.07+'s"><div class="lb-rank">'+(MEDALS[i]||(i+1))+'</div><div class="lb-avatar">'+c.num+'</div><div class="lb-name">'+esc(c.name||'?')+'</div><div class="lb-score">'+(c.score||0)+'</div></div>';
+  }).join('');
+}
+
 /* ENDED */
 function renderEnded(){
   var sorted=[];
@@ -1150,6 +1251,8 @@ function renderEnded(){
     sorted=tb.teams.map(function(t2,i){return{name:t2.name,score:t2.score||0,idx:i};}).sort(function(a,b){return b.score-a.score;});
   }else if(mode==='speed'){
     sorted=Object.values(sp.players||{}).sort(function(a,b){return(b.score||0)-(a.score||0);});
+  }else if(mode==='oral'){
+    sorted=Object.keys(oral.contestants||{}).map(function(cid){var c=oral.contestants[cid];return{name:'#'+c.num+' '+(c.name||''),score:c.score||0};}).sort(function(a,b){return(b.score||0)-(a.score||0);});
   }else{
     sorted=Object.values(players).sort(function(a,b){return(b.score||0)-(a.score||0);});
   }
