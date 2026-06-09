@@ -509,29 +509,40 @@ body::after{animation-duration:14s!important}
 <div class="screen" id="s-oral">
   <div class="stripe top"></div>
   <div class="orb" style="width:600px;height:340px;background:radial-gradient(ellipse,rgba(168,85,247,.14),transparent);top:-90px;left:50%;transform:translateX(-50%);animation-duration:12s"></div>
-  <div style="position:relative;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;width:100%;max-width:900px;margin:0 auto;padding:30px;text-align:center">
-    <div style="font-size:1rem;letter-spacing:4px;text-transform:uppercase;color:#c084fc;font-weight:700;margin-bottom:20px"><i class="fa-solid fa-microphone"></i> Oral Round</div>
-    <!-- Active contestant -->
-    <div id="oral-active-card" style="display:none;flex-direction:column;align-items:center;gap:14px">
-      <div style="width:130px;height:130px;border-radius:50%;background:linear-gradient(135deg,#a855f7,#6d28d9);display:flex;align-items:center;justify-content:center;font-size:3.6rem;font-weight:900;color:#fff;box-shadow:0 0 50px rgba(168,85,247,.5)" id="oral-num-big">1</div>
-      <div style="font-size:2.4rem;font-weight:900;color:#fff" id="oral-name-big">Name</div>
-      <div id="oral-q-big" style="font-size:1.5rem;color:var(--text2);max-width:780px;line-height:1.4;margin-top:8px"></div>
+  <div style="position:relative;z-index:3;display:flex;flex-direction:column;align-items:center;height:100%;width:100%;max-width:1000px;margin:0 auto;padding:24px">
+    <div style="font-size:.95rem;letter-spacing:4px;text-transform:uppercase;color:#c084fc;font-weight:700;margin-bottom:10px"><i class="fa-solid fa-microphone"></i> Oral Round</div>
+    <!-- Group scores -->
+    <div style="display:flex;gap:18px;width:100%;justify-content:center;margin-bottom:14px">
+      <div id="oral-g0-card" style="flex:1;max-width:300px;text-align:center;padding:12px;border-radius:14px;background:rgba(192,21,42,.08);border:2px solid rgba(192,21,42,.25)">
+        <div id="oral-g0-name" style="font-size:1rem;font-weight:700;color:#ff8080">Group A</div>
+        <div id="oral-g0-score" style="font-size:2rem;font-weight:900;color:var(--gold)">0</div>
+      </div>
+      <div id="oral-g1-card" style="flex:1;max-width:300px;text-align:center;padding:12px;border-radius:14px;background:rgba(37,99,235,.08);border:2px solid rgba(37,99,235,.25)">
+        <div id="oral-g1-name" style="font-size:1rem;font-weight:700;color:#60a5fa">Group B</div>
+        <div id="oral-g1-score" style="font-size:2rem;font-weight:900;color:var(--gold)">0</div>
+      </div>
+    </div>
+    <!-- Active question -->
+    <div id="oral-q-card" style="display:none;flex-direction:column;align-items:center;gap:14px;width:100%;flex:1;justify-content:center">
+      <div id="oral-turn-badge" style="font-size:1.1rem;font-weight:800;padding:6px 18px;border-radius:20px"></div>
+      <div style="display:flex;align-items:center;gap:18px">
+        <div class="tc-wrap" style="width:90px;height:90px"><svg viewBox="0 0 120 120" style="width:90px;height:90px"><circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="7"/><circle id="oral-tc-ring" cx="60" cy="60" r="52" fill="none" stroke="#a855f7" stroke-width="7" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="0" transform="rotate(-90 60 60)"/></svg><div id="oral-tc-num" style="position:absolute;font-size:1.6rem;font-weight:900;color:#c084fc">60</div></div>
+      </div>
+      <div id="oral-q-text" style="font-size:2rem;font-weight:800;color:#fff;text-align:center;max-width:880px;line-height:1.3"></div>
+      <div id="oral-q-opts" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:760px"></div>
     </div>
     <!-- Result reveal -->
-    <div id="oral-result-card" style="display:none;flex-direction:column;align-items:center;gap:16px">
-      <div id="oral-result-icon" style="font-size:5rem"></div>
-      <div id="oral-result-verdict" style="font-size:3rem;font-weight:900"></div>
-      <div id="oral-result-name" style="font-size:1.6rem;color:var(--text2)"></div>
-      <div id="oral-result-score" style="font-family:'JetBrains Mono',monospace;font-size:1.3rem;font-weight:800"></div>
+    <div id="oral-result-card" style="display:none;flex-direction:column;align-items:center;gap:14px;flex:1;justify-content:center">
+      <div id="oral-result-icon" style="font-size:4.5rem"></div>
+      <div id="oral-result-verdict" style="font-size:2.6rem;font-weight:900"></div>
+      <div id="oral-result-detail" style="font-size:1.3rem;color:var(--text2);text-align:center"></div>
     </div>
     <!-- Idle -->
-    <div id="oral-idle-card" style="display:none;flex-direction:column;align-items:center;gap:10px">
-      <div style="font-size:4rem">🎤</div>
-      <div style="font-size:1.8rem;font-weight:800;color:#fff">Oral Round</div>
-      <div style="font-size:1.1rem;color:var(--text2)">Waiting for the next contestant…</div>
+    <div id="oral-idle-card" style="display:none;flex-direction:column;align-items:center;gap:10px;flex:1;justify-content:center">
+      <div style="font-size:3.6rem">🎤</div>
+      <div style="font-size:1.6rem;font-weight:800;color:#fff">Oral Round</div>
+      <div style="font-size:1.05rem;color:var(--text2)">Waiting for the next question…</div>
     </div>
-    <!-- Standings strip -->
-    <div id="oral-standings-strip" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:34px;max-width:840px"></div>
   </div>
 </div>
 
@@ -882,7 +893,7 @@ let db=null,timerInt=null,tbTimerInt=null,spTimerInt=null;
 let mode='standard',gs={state:'lobby'},players={};
 let tb={state:'lobby',teams:[{name:'Red Eagles',score:0},{name:'Blue Lions',score:0}],cq:null,lock:null,activeTeam:0,isBonus:false,members:{}};
 let sp={state:'lobby',activePid:null,session:null,players:{}};
-let oral={state:'idle',contestants:{},activeCid:null,question:null,lastResult:null};
+let oral={state:'idle',groups:[{name:'Group A',score:0},{name:'Group B',score:0}],cq:null,lastResult:null};
 let lastSpSessionId=null,lastSpQIdx=-1;
 const CIRC=270.2,TBCIRC=238.8,ALPHA=['A','B','C','D'];
 const MEDALS=['🥇','🥈','🥉'];
@@ -927,10 +938,9 @@ function setupListeners(){
   db.ref('quiz/mode').on('value',function(s){mode=s.val()||'standard';updateModePill();});
   db.ref('quiz/oral').on('value',function(s){
     var d=s.val()||{};
-    oral.contestants=d.contestants||{};
-    oral.activeCid=d.activeCid||null;
+    oral.groups=d.groups||[{name:'Group A',score:0},{name:'Group B',score:0}];
+    oral.cq=d.cq||null;
     oral.state=d.state||'idle';
-    oral.question=d.question||null;
     oral.lastResult=d.lastResult||null;
     if(mode==='oral')handleOral();
   });
@@ -1191,56 +1201,69 @@ function renderTBLeaderboard(){
 function handleOral(){
   if(gs.state==='leaderboard'||gs.state==='section_leaderboard'||gs.state==='ended')return;
   sc('s-oral');
-  var activeCard=el('oral-active-card'), resultCard=el('oral-result-card'), idleCard=el('oral-idle-card');
-  activeCard.style.display='none'; resultCard.style.display='none'; idleCard.style.display='none';
-  renderOralStandings();
+  var g=oral.groups||[{name:'Group A',score:0},{name:'Group B',score:0}];
+  el('oral-g0-name').textContent=g[0]?g[0].name:'Group A';
+  el('oral-g1-name').textContent=g[1]?g[1].name:'Group B';
+  el('oral-g0-score').textContent=g[0]?(g[0].score||0):0;
+  el('oral-g1-score').textContent=g[1]?(g[1].score||0):0;
+  var qCard=el('oral-q-card'),rCard=el('oral-result-card'),iCard=el('oral-idle-card');
+  qCard.style.display='none';rCard.style.display='none';iCard.style.display='none';
+  /* highlight active group card */
+  var gi=oral.cq?(oral.cq.activeGroup||0):-1;
+  el('oral-g0-card').style.boxShadow=(gi===0&&oral.state==='active')?'0 0 30px rgba(192,21,42,.4)':'none';
+  el('oral-g1-card').style.boxShadow=(gi===1&&oral.state==='active')?'0 0 30px rgba(37,99,235,.4)':'none';
+
   if(oral.state==='reveal'&&oral.lastResult){
-    var r=oral.lastResult;
-    resultCard.style.display='flex';
+    var r=oral.lastResult;rCard.style.display='flex';
     if(r.correct){
       el('oral-result-icon').textContent='🎉';
       el('oral-result-verdict').textContent='CORRECT!';
       el('oral-result-verdict').style.color='var(--green)';
-      el('oral-result-score').textContent='+'+r.points+' points  •  Total: '+r.newScore;
-      el('oral-result-score').style.color='var(--green)';
+      el('oral-result-detail').innerHTML='<b>'+esc(r.groupName||'')+'</b> scored +'+r.points+(r.isBonus?' (pass)':'')+' marks';
       if(typeof sfxCorrect==='function')sfxCorrect();
     }else{
       el('oral-result-icon').textContent='❌';
-      el('oral-result-verdict').textContent='WRONG';
+      el('oral-result-verdict').textContent=r.bothMissed?'Both Missed':'WRONG';
       el('oral-result-verdict').style.color='var(--red-b)';
-      el('oral-result-score').textContent='No points  •  Total: '+r.newScore;
-      el('oral-result-score').style.color='var(--text2)';
+      var ans=r.answer?('Correct answer: '+r.answer):'';
+      el('oral-result-detail').innerHTML='<b>'+esc(r.groupName||'')+'</b> didn\u2019t score. '+ans;
       if(typeof sfxWrong==='function')sfxWrong();
     }
-    el('oral-result-name').textContent='#'+r.num+' — '+r.name;
   }
-  else if(oral.state==='active'&&oral.activeCid&&oral.contestants[oral.activeCid]){
-    var c=oral.contestants[oral.activeCid];
-    activeCard.style.display='flex';
-    el('oral-num-big').textContent=c.num;
-    el('oral-name-big').textContent=c.name||'?';
-    var q=el('oral-q-big');
-    if(oral.question){q.textContent=oral.question;q.style.display='block';}
-    else q.style.display='none';
+  else if(oral.state==='active'&&oral.cq){
+    qCard.style.display='flex';
+    var gn=g[gi]?g[gi].name:'Group';
+    var badge=el('oral-turn-badge');
+    if(oral.cq.isBonus){badge.textContent='PASS — '+gn+' (+5)';badge.style.background='rgba(245,197,24,.15)';badge.style.color='var(--gold)';}
+    else{badge.textContent=gn+' — answer aloud (+10)';badge.style.background='rgba(168,85,247,.15)';badge.style.color='#c084fc';}
+    el('oral-q-text').textContent=oral.cq.text;
+    el('oral-q-opts').innerHTML=Object.keys(oral.cq.options||{}).map(function(k){
+      return '<div style="padding:14px 18px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);font-size:1.2rem;color:#fff"><b style="color:#c084fc">'+k+'.</b> '+esc(oral.cq.options[k])+'</div>';
+    }).join('');
+    oralAudTimer();
   }
-  else{
-    idleCard.style.display='flex';
-  }
+  else{ iCard.style.display='flex'; }
 }
-function renderOralStandings(){
-  var strip=el('oral-standings-strip');if(!strip)return;
-  var arr=Object.keys(oral.contestants||{}).map(function(cid){return oral.contestants[cid];})
-              .sort(function(a,b){return (b.score||0)-(a.score||0);}).slice(0,8);
-  strip.innerHTML=arr.map(function(c){
-    return '<div style="background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.25);border-radius:12px;padding:8px 14px;min-width:90px"><div style="font-size:.8rem;color:var(--text2)">#'+c.num+' '+esc((c.name||'').split(' ')[0])+'</div><div style="font-size:1.3rem;font-weight:900;color:#c084fc">'+(c.score||0)+'</div></div>';
-  }).join('');
+var _oralAudInt=null;
+function oralAudTimer(){
+  if(_oralAudInt){clearInterval(_oralAudInt);_oralAudInt=null;}
+  var ring=el('oral-tc-ring'),num=el('oral-tc-num');
+  if(!oral.cq||!ring)return;
+  var limit=oral.cq.timeLimit||60,start=oral.cq.startTime,C=326.7;
+  function tick(){
+    if(!oral.cq||oral.state!=='active'){if(_oralAudInt){clearInterval(_oralAudInt);_oralAudInt=null;}return;}
+    var left=Math.max(0,limit-(serverNow()-start)/1000),pct=left/limit;
+    ring.style.strokeDashoffset=(1-pct)*C;ring.style.stroke=left<=10?'#ef4444':'#a855f7';
+    num.textContent=Math.ceil(left);num.style.color=left<=10?'#ef4444':'#c084fc';
+    if(left<=0){num.textContent='0';if(_oralAudInt){clearInterval(_oralAudInt);_oralAudInt=null;}}
+  }
+  tick();_oralAudInt=setInterval(tick,250);
 }
 function renderOralLeaderboard(){
-  var arr=Object.keys(oral.contestants||{}).map(function(cid){return oral.contestants[cid];})
-              .sort(function(a,b){return (b.score||0)-(a.score||0);}).slice(0,10);
-  var grid=el('lb-grid');grid.className='lb-grid'+(arr.length<=5?' single':'');
-  grid.innerHTML=arr.map(function(c,i){
-    return '<div class="lb-row" style="animation-delay:'+i*0.07+'s"><div class="lb-rank">'+(MEDALS[i]||(i+1))+'</div><div class="lb-avatar">'+c.num+'</div><div class="lb-name">'+esc(c.name||'?')+'</div><div class="lb-score">'+(c.score||0)+'</div></div>';
+  var g=(oral.groups||[]).map(function(x,i){return{name:x.name,score:x.score||0,idx:i};}).sort(function(a,b){return (b.score||0)-(a.score||0);});
+  var grid=el('lb-grid');grid.className='lb-grid single';
+  grid.innerHTML=g.map(function(t2,i){
+    return '<div class="tlb-row t'+t2.idx+' '+(i===0?'winner':'')+'" style="animation-delay:'+i*0.1+'s"><div class="tlb-rank">'+(MEDALS[i]||(i+1))+'</div><div class="tlb-name">'+esc(t2.name)+'</div><div class="tlb-score">'+(t2.score||0)+' marks</div></div>';
   }).join('');
 }
 
@@ -1252,7 +1275,7 @@ function renderEnded(){
   }else if(mode==='speed'){
     sorted=Object.values(sp.players||{}).sort(function(a,b){return(b.score||0)-(a.score||0);});
   }else if(mode==='oral'){
-    sorted=Object.keys(oral.contestants||{}).map(function(cid){var c=oral.contestants[cid];return{name:'#'+c.num+' '+(c.name||''),score:c.score||0};}).sort(function(a,b){return(b.score||0)-(a.score||0);});
+    sorted=(oral.groups||[]).map(function(x){return{name:x.name,score:x.score||0};}).sort(function(a,b){return(b.score||0)-(a.score||0);});
   }else{
     sorted=Object.values(players).sort(function(a,b){return(b.score||0)-(a.score||0);});
   }
