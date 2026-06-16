@@ -449,7 +449,7 @@ body::after{animation-duration:14s!important}
     <div class="th-row1">
       <div style="display:flex;gap:10px;align-items:center">
         <span class="team-act-badge t0" id="team-act-badge">Red Eagles</span>
-        <span class="marks-tag n" id="team-marks-tag">5 marks</span>
+        <span class="marks-tag n" id="team-marks-tag">10 marks</span>
       </div>
       <div style="display:flex;align-items:center;gap:12px">
         <div class="tb-timer-wrap">
@@ -1086,7 +1086,7 @@ function renderTBQ(){
   var tn=(tb.teams[tIdx])?tb.teams[tIdx].name:'?';
   el('team-hdr').className='team-hdr '+(isBonus?'bonus':'t'+tIdx);
   var badge=el('team-act-badge');badge.className='team-act-badge '+(isBonus?'bonus':'t'+tIdx);badge.textContent=(isBonus?'⚡ BONUS — ':'')+tn;
-  var mt=el('team-marks-tag');mt.className='marks-tag '+(isBonus?'b':'n');mt.textContent=isBonus?'2 marks (bonus)':'5 marks';
+  var mt=el('team-marks-tag');mt.className='marks-tag '+(isBonus?'b':'n');mt.textContent=isBonus?'5 marks (bonus)':'10 marks';
   el('team-score-row').innerHTML=tb.teams.map(function(t2,i){
     return '<div class="tsc t'+i+' '+(i===tIdx&&!isBonus?'active-t':'')+'"><div class="tsc-name">'+esc(t2.name)+'</div><div class="tsc-score">'+(t2.score||0)+'</div></div>';
   }).join('');
