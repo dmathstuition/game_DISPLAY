@@ -388,7 +388,7 @@ body::after{animation-duration:14s!important}
   <div class="lobby-center">
     <div class="ija-crest"><div class="crest-r1"></div><div class="crest-r2"></div><div class="crest-ico">🏫</div></div>
     <div class="lobby-school">Infant Jesus Academy</div>
-    <div class="lobby-title"><span class="w1">MATHS</span><span class="w2">STEAM QUIZ</span><span class="w3">COMPETITION</span></div>
+    <div class="lobby-title"><span class="w1">MATHS</span><span class="w2">QUIZ</span><span class="w3">COMPETITION</span></div>
     <div class="lobby-tagline">Where Champions Are Made</div>
     <div class="mode-pill standard" id="lobby-mode-pill">📝 Standard Mode</div>
     <div class="player-badge"><div class="live-dot"></div><span id="lobby-count" style="font-size:1.5rem;font-family:'JetBrains Mono',monospace">0</span>&nbsp;players joined</div>
@@ -567,6 +567,9 @@ body::after{animation-duration:14s!important}
 
 <div class="ans-pill" id="ans-pill">Answered: <b id="ans-num">0</b>/<span id="ans-total">0</span></div>
 <button id="aud-mute" onclick="toggleAudioMute()" style="position:fixed;bottom:16px;left:16px;z-index:200;background:rgba(4,9,15,.85);border:1px solid rgba(192,21,42,.3);border-radius:10px;padding:8px 14px;font-size:.82rem;cursor:pointer;color:var(--text2);font-family:'JetBrains Mono',monospace;backdrop-filter:blur(8px);transition:all .15s;display:flex;align-items:center;gap:6px">🔊 Sound ON</button>
+<button id="aud-music-btn" onclick="document.getElementById('bg-music-file').click()" style="position:fixed;bottom:16px;left:140px;z-index:200;background:rgba(4,9,15,.85);border:1px solid rgba(168,85,247,.35);border-radius:10px;padding:8px 14px;font-size:.82rem;cursor:pointer;color:#c084fc;font-family:'JetBrains Mono',monospace;backdrop-filter:blur(8px);transition:all .15s;display:flex;align-items:center;gap:6px">🎵 Load Music</button>
+<input type="file" id="bg-music-file" accept="audio/*" style="display:none" onchange="loadBgMusic(event)">
+<audio id="bg-music" loop></audio>
 <button id="aud-start-sound" onclick="startAudioEngine()" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:300;background:linear-gradient(135deg,#e8192f,#7a0a18);border:none;border-radius:20px;padding:24px 48px;font-size:1.2rem;font-weight:800;color:#fff;cursor:pointer;font-family:'Nunito',sans-serif;box-shadow:0 0 60px rgba(192,21,42,.5);display:none;letter-spacing:.5px">🔊 Tap to Enable Sound</button>
 
 <script>
@@ -593,6 +596,9 @@ function startAudioEngine(){
   _audioStarted=true;
   document.getElementById('aud-start-sound').style.display='none';
   startDrone();
+  /* If a music file was already loaded, start it */
+  var bg=document.getElementById('bg-music');
+  if(bg&&bg.src&&!_muted)bg.play().catch(function(){});
 }
 
 function toggleAudioMute(){
@@ -600,6 +606,33 @@ function toggleAudioMute(){
   var btn=document.getElementById('aud-mute');
   btn.textContent=_muted?'🔇 Sound OFF':'🔊 Sound ON';
   if(_masterGain)_masterGain.gain.setTargetAtTime(_muted?0:1,_ax.currentTime,0.1);
+  /* Background music follows the mute toggle too */
+  var bg=document.getElementById('bg-music');
+  if(bg){ if(_muted){ bg.pause(); } else if(bg.src){ bg.play().catch(function(){}); } }
+}
+
+/* ── BACKGROUND MUSIC (imported file) ── */
+var _bgBaseVol=0.45;       /* normal volume */
+var _bgDuckVol=0.14;       /* lowered during live questions */
+function loadBgMusic(e){
+  var f=e.target.files&&e.target.files[0];
+  if(!f)return;
+  var bg=document.getElementById('bg-music');
+  try{ bg.src=URL.createObjectURL(f); }catch(err){ return; }
+  bg.volume=_bgBaseVol;
+  bg.loop=true;
+  if(!_muted) bg.play().catch(function(){});
+  var btn=document.getElementById('aud-music-btn');
+  if(btn){ btn.innerHTML='🎵 '+(f.name.length>14?f.name.slice(0,14)+'…':f.name); btn.style.color='#22c55e'; }
+}
+/* Duck (lower) the music during questions, restore it elsewhere */
+function duckMusic(on){
+  var bg=document.getElementById('bg-music');
+  if(!bg||!bg.src)return;
+  var target=on?_bgDuckVol:_bgBaseVol;
+  /* simple smooth ramp */
+  var steps=10,i=0,from=bg.volume,diff=target-from;
+  var iv=setInterval(function(){i++;bg.volume=Math.max(0,Math.min(1,from+diff*(i/steps)));if(i>=steps)clearInterval(iv);},30);
 }
 
 /* ── MASTER GAIN ── */
@@ -670,6 +703,8 @@ function stopDrone(){
 function setDroneIntensity(level){
   if(!_droneGain||!_ax)return;
   _droneGain.gain.setTargetAtTime(Math.max(0,Math.min(1,level)),_ax.currentTime,0.5);
+  /* Lower imported background music during tense/question moments, restore otherwise */
+  duckMusic(level>=0.7);
 }
 
 /* ── HELPER: play a tone ── */
@@ -732,7 +767,7 @@ function sfxTimeUp(){
   setDroneIntensity(0.5);
 }
 
-/* ── SFX: Correct Answer Reveal — triumphant fanfare ── */
+/* ── SFX: Correct Answer Reveal — triumphant fanfare + crowd cheer ── */
 function sfxCorrectReveal(){
   if(!_audioStarted)return;
   _tone(523.25,'sine',0,0.3,0.18);
@@ -740,10 +775,30 @@ function sfxCorrectReveal(){
   _tone(783.99,'sine',0.16,0.3,0.14);
   _tone(1046.5,'sine',0.24,0.5,0.2);
   _tone(1318.5,'sine',0.32,0.4,0.12);
-  /* Sparkle highs */
   _tone(2093,'sine',0.3,0.2,0.04);
   _tone(2637,'sine',0.35,0.15,0.03);
+  sfxApplause();
   setDroneIntensity(0.3);
+}
+
+/* ── SFX: Applause / crowd cheer — filtered noise swell ── */
+function sfxApplause(){
+  if(!_audioStarted)return;
+  var ax=getAx();var master=ensureMaster();if(!master)return;
+  var dur=1.6;
+  var buf=ax.createBuffer(1,Math.floor(ax.sampleRate*dur),ax.sampleRate);
+  var data=buf.getChannelData(0);
+  for(var i=0;i<data.length;i++){
+    /* clustered noise bursts = clapping texture */
+    var env=Math.sin(Math.PI*(i/data.length));            /* swell in/out */
+    var clap=(Math.random()<0.06)?1:0.25;                  /* sparse louder claps */
+    data[i]=(Math.random()*2-1)*env*clap;
+  }
+  var src=ax.createBufferSource();src.buffer=buf;
+  var bp=ax.createBiquadFilter();bp.type='bandpass';bp.frequency.value=2200;bp.Q.value=0.7;
+  var g=ax.createGain();g.gain.value=0.22;
+  src.connect(bp);bp.connect(g);g.connect(master);
+  src.start();
 }
 
 /* ── SFX: Wrong/Miss — tension buzz ── */
@@ -1238,13 +1293,13 @@ function handleOral(){
       el('oral-result-verdict').textContent='CORRECT!';
       el('oral-result-verdict').style.color='var(--green)';
       el('oral-result-detail').innerHTML='<b>'+esc(r.groupName||'')+'</b> scored +'+r.points+(r.isBonus?' on the pass':'')+' marks';
-      if(typeof sfxCorrect==='function')sfxCorrect();
+      if(typeof sfxCorrectReveal==='function')sfxCorrectReveal();
     }else{
       el('oral-result-icon').textContent='❌';
       el('oral-result-verdict').textContent=r.bothMissed?'Both Missed':'WRONG';
       el('oral-result-verdict').style.color='var(--red-b)';
       el('oral-result-detail').innerHTML='<b>'+esc(r.groupName||'')+'</b> didn\u2019t score'+(r.answer?'. Correct answer: <b style="color:var(--green)">'+r.answer+'</b>':'');
-      if(typeof sfxWrong==='function')sfxWrong();
+      if(typeof sfxWrongReveal==='function')sfxWrongReveal();
     }
   }
   else{
