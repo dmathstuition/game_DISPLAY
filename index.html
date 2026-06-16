@@ -6,10 +6,10 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Space+Grotesk:wght@400;600;700;800&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Baloo+2:wght@700;800;900&family=Nunito:wght@700;800;900&family=Space+Grotesk:wght@400;600;700;800&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#38EF2E;--card:#0a1525;--border:#12223a;--red:#c0152a;--red-b:#e8192f;--red-d:#7a0a18;--gold:#f5c518;--text:#eaf2ff;--text2:#3d5a7a;--green:#22c55e;--blue:#3b82f6;--purple:#a855f7;--orange:#f97316;}
+:root{--bg:#04090f;--card:#0a1525;--border:#12223a;--red:#c0152a;--red-b:#e8192f;--red-d:#7a0a18;--gold:#f5c518;--text:#eaf2ff;--text2:#3d5a7a;--green:#22c55e;--blue:#3b82f6;--purple:#a855f7;--orange:#f97316;}
 html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif}
 canvas#bgc{position:fixed;inset:0;z-index:0}
 .screen{display:none;position:fixed;inset:0;z-index:10;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
@@ -363,10 +363,65 @@ body::after{animation-duration:14s!important}
 
 /* Timer ring stays crisp — glow layer softened so the number is the focus */
 .tc-glow{opacity:.5}
+/* ═══ STEAM COMPETITION BACKGROUND (red/yellow theme) ═══ */
+/* Let the fixed STEAM background show through every screen */
+#s-setup,#s-lobby,#s-section,#s-team-idle,#s-speed-idle,#s-speed,#s-ended,#s-question,#s-team,#s-oral,#s-lb{background:transparent!important}
+.steam-bg{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 80% 60% at 20% 10%, rgba(204,0,34,.55) 0%, transparent 60%),
+             radial-gradient(ellipse 60% 80% at 85% 90%, rgba(139,0,22,.7) 0%, transparent 60%),
+             linear-gradient(160deg, #1a0006 0%, #3d0010 40%, #1a0006 100%);}
+.steam-grid{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(rgba(204,0,34,.12) 1px, transparent 1px),linear-gradient(90deg, rgba(204,0,34,.12) 1px, transparent 1px);
+  background-size:48px 48px;
+  -webkit-mask-image:radial-gradient(ellipse 90% 80% at 50% 50%, black 40%, transparent 100%);
+  mask-image:radial-gradient(ellipse 90% 80% at 50% 50%, black 40%, transparent 100%);}
+.steam-floaters{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+.fsym{position:absolute;font-family:'Fredoka One',cursive;color:rgba(255,214,0,.12);
+  animation:fsym-float var(--t,14s) ease-in-out infinite alternate;animation-delay:var(--d,0s);user-select:none}
+@keyframes fsym-float{0%{transform:translateY(0) rotate(var(--r0,0deg)) scale(1)}100%{transform:translateY(var(--dy,-40px)) rotate(var(--r1,15deg)) scale(1.08)}}
+.steam-orbs{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.steam-orb{position:absolute;border-radius:50%;filter:blur(80px);animation:steam-orb-drift var(--ot,20s) ease-in-out infinite alternate;opacity:var(--oo,.18)}
+@keyframes steam-orb-drift{0%{transform:translate(0,0) scale(1)}100%{transform:translate(var(--ox,40px),var(--oy,-60px)) scale(1.15)}}
+.steam-sparks{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+.spark{position:absolute;border-radius:50%;animation:spark-twinkle var(--st,2.5s) ease-in-out infinite;animation-delay:var(--sd,0s)}
+@keyframes spark-twinkle{0%,100%{transform:scale(0);opacity:0}50%{transform:scale(1);opacity:1}}
+
+/* Lobby hero — bold, centred STEAM */
+.lobby-steam-label{font-family:'Nunito',sans-serif;font-size:clamp(12px,1.4vw,17px);font-weight:900;letter-spacing:6px;text-transform:uppercase;color:#FFD600;opacity:.9;margin-bottom:10px;text-align:center}
+.lobby-steam-school{font-family:'Baloo 2',cursive;font-size:clamp(24px,3.6vw,48px);font-weight:900;color:#fff;text-align:center;line-height:1.1;text-shadow:0 4px 20px rgba(0,0,0,.45);margin-bottom:6px}
+.lobby-steam-title{font-family:'Fredoka One',cursive;font-size:clamp(54px,11vw,150px);color:#FFD600;text-align:center;line-height:.95;letter-spacing:2px;text-shadow:0 8px 40px rgba(255,214,0,.4), 5px 5px 0 rgba(0,0,0,.28);margin:6px 0;animation:steamZoom .7s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes steamZoom{from{opacity:0;transform:scale(.9) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.lobby-steam-sub{font-family:'Nunito',sans-serif;font-size:clamp(15px,2vw,24px);font-weight:800;color:rgba(255,255,255,.65);text-align:center;letter-spacing:1px;margin-top:4px}
 </style>
 </head>
 <body>
 <canvas id="bgc"></canvas>
+<div class="steam-bg"></div>
+<div class="steam-grid"></div>
+<div class="steam-orbs">
+  <div class="steam-orb" style="width:500px;height:500px;background:rgba(204,0,34,.4);top:-120px;left:-120px;--ox:60px;--oy:80px;--ot:22s"></div>
+  <div class="steam-orb" style="width:400px;height:400px;background:rgba(139,0,230,.22);bottom:-80px;right:-60px;--ox:-50px;--oy:-70px;--ot:18s"></div>
+  <div class="steam-orb" style="width:300px;height:300px;background:rgba(255,214,0,.1);top:40%;left:55%;--ox:-40px;--oy:50px;--ot:25s;--oo:.12"></div>
+</div>
+<div class="steam-floaters" id="steam-floaters"></div>
+<div class="steam-sparks" id="steam-sparks"></div>
+<script>
+/* Decorative background only — no game logic */
+(function(){
+  var syms=['π','√','∑','∞','∫','Δ','θ','±','÷','×','²','³','≠','≥','α','β','φ','λ'];
+  var fl=document.getElementById('steam-floaters');
+  if(fl){for(var i=0;i<28;i++){var d=document.createElement('div');d.className='fsym';d.textContent=syms[i%syms.length];
+    var size=16+Math.random()*52;
+    d.style.cssText='left:'+(Math.random()*100)+'%;top:'+(Math.random()*100)+'%;font-size:'+size+'px;--t:'+(10+Math.random()*12)+'s;--d:'+(Math.random()*8)+'s;--dy:'+(-20-Math.random()*60)+'px;--r0:'+((Math.random()-.5)*20)+'deg;--r1:'+((Math.random()-.5)*30)+'deg;';
+    fl.appendChild(d);}}
+  var spCols=['#FFD600','#CC0022','#8B00E6','#006FFF','#00C853','#FF3D8A','#FF6A00'];
+  var sp=document.getElementById('steam-sparks');
+  if(sp){for(var j=0;j<40;j++){var s=document.createElement('div');s.className='spark';
+    var sz=2+Math.random()*7;
+    s.style.cssText='width:'+sz+'px;height:'+sz+'px;left:'+(Math.random()*100)+'%;top:'+(Math.random()*100)+'%;background:'+spCols[j%spCols.length]+';--st:'+(1.2+Math.random()*3)+'s;--sd:'+(Math.random()*4)+'s;';
+    sp.appendChild(s);}}
+})();
+</script>
 <div id="broadcast-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:500;background:linear-gradient(135deg,#1e40af,#2563eb);color:#fff;padding:18px 24px;font-size:1.4rem;font-weight:800;text-align:center;box-shadow:0 4px 30px rgba(0,0,0,.5);letter-spacing:.5px"></div>
 
 <div class="screen" id="s-setup">
@@ -382,16 +437,15 @@ body::after{animation-duration:14s!important}
   </div>
 </div>
 
-<div class="screen on" id="s-lobby">  <div class="stripe top"></div><div class="stripe bottom"></div>
-  <div class="orb" style="width:450px;height:450px;background:radial-gradient(circle,rgba(192,21,42,.18),transparent);top:-120px;left:-100px;animation-duration:12s"></div>
-  <div class="orb" style="width:320px;height:320px;background:radial-gradient(circle,rgba(122,10,24,.22),transparent);bottom:-80px;right:-80px;animation-duration:9s"></div>
-  <div class="lobby-center">
-    <div class="ija-crest"><div class="crest-r1"></div><div class="crest-r2"></div><div class="crest-ico">🏫</div></div>
-    <div class="lobby-school">Infant Jesus Academy</div>
-    <div class="lobby-title"><span class="w1">MATHS</span><span class="w2">QUIZ</span><span class="w3">COMPETITION</span></div>
-    <div class="lobby-tagline">Where Champions Are Made</div>
-    <div class="mode-pill standard" id="lobby-mode-pill">📝 Standard Mode</div>
-    <div class="player-badge"><div class="live-dot"></div><span id="lobby-count" style="font-size:1.5rem;font-family:'JetBrains Mono',monospace">0</span>&nbsp;players joined</div>
+<div class="screen on" id="s-lobby">
+  <div class="lobby-center" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:4px;width:100%;max-width:1000px;margin:0 auto;padding:40px 24px">
+    <div class="ija-crest" style="margin-bottom:18px"><div class="crest-r1"></div><div class="crest-r2"></div><div class="crest-ico">🏆</div></div>
+    <div class="lobby-steam-label">★ Official Live Screen ★</div>
+    <div class="lobby-steam-school">Infant Jesus Academy</div>
+    <div class="lobby-steam-title">STEAM</div>
+    <div class="lobby-steam-sub">Mathematics &amp; Science Competition</div>
+    <div class="mode-pill standard" id="lobby-mode-pill" style="margin-top:26px">📝 Standard Mode</div>
+    <div class="player-badge" style="margin-top:18px"><div class="live-dot"></div><span id="lobby-count" style="font-size:1.5rem;font-family:'JetBrains Mono',monospace">0</span>&nbsp;players joined</div>
   </div>
 </div>
 
