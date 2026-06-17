@@ -364,6 +364,21 @@ body::after{animation-duration:14s!important}
 /* Timer ring stays crisp — glow layer softened so the number is the focus */
 .tc-glow{opacity:.5}
 /* ═══ STEAM COMPETITION BACKGROUND (red/yellow theme) ═══ */
+#reveal-board{width:100%;max-width:820px;margin:14px auto 0;background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:14px 16px;backdrop-filter:blur(8px)}
+.rv-ans-head{text-align:center;font-size:clamp(1.1rem,1.8vw,1.5rem);font-weight:900;color:var(--gold);margin-bottom:12px}
+.rv-cols{display:grid;grid-template-columns:2fr 1.3fr .75fr .8fr;gap:8px;padding:0 12px 7px;font-size:.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--text2);font-weight:800}
+.rv-cols span:nth-child(3),.rv-cols span:nth-child(4){text-align:right}
+.rv-players{display:flex;flex-direction:column;gap:7px;max-height:46vh;overflow-y:auto}
+.rv-player{display:grid;grid-template-columns:2fr 1.3fr .75fr .8fr;gap:8px;align-items:center;padding:11px 12px;border-radius:11px;background:rgba(255,255,255,.04);border-left:5px solid;animation:rvIn .35s ease both}
+@keyframes rvIn{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
+.rv-player.ok{border-left-color:var(--green);background:rgba(34,197,94,.07)}
+.rv-player.no{border-left-color:var(--red-b);background:rgba(239,68,68,.06)}
+.rvp-name{font-size:clamp(1rem,1.5vw,1.2rem);font-weight:800;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rvp-verdict{font-size:clamp(.9rem,1.3vw,1.05rem);font-weight:900;letter-spacing:.5px}
+.rv-player.ok .rvp-verdict{color:var(--green)}
+.rv-player.no .rvp-verdict{color:#ff6b6b}
+.rvp-pts{font-family:'JetBrains Mono',monospace;font-weight:800;color:var(--gold);text-align:right}
+.rvp-score{font-family:'JetBrains Mono',monospace;font-weight:900;color:#fff;text-align:right;font-size:1.1rem}
 /* Let the fixed STEAM background show through every screen */
 #s-setup,#s-lobby,#s-section,#s-team-idle,#s-speed-idle,#s-speed,#s-ended,#s-question,#s-team,#s-oral,#s-lb{background:transparent!important}
 .steam-bg{position:fixed;inset:0;z-index:0;pointer-events:none;
@@ -483,6 +498,7 @@ body::after{animation-duration:14s!important}
     <div class="opts-grid" id="aud-opts"></div>
     <div class="stats-row" id="aud-stats" style="display:none"></div>
     <div id="fastest-spot" style="display:none;align-items:center;justify-content:center;padding:12px 24px;background:rgba(245,197,24,.08);border:1px solid rgba(245,197,24,.25);border-radius:14px;margin-top:8px;backdrop-filter:blur(8px)"></div>
+    <div id="reveal-board" style="display:none"></div>
   </div>
 </div>
 
@@ -1139,6 +1155,7 @@ function renderStdQ(){
   var qel=el('aud-q-text');qel.textContent=q.text;qel.className='q-text-big'+(q.text.length>80?' long':'');
   el('aud-stats').style.display='none';
   var fs=el('fastest-spot');if(fs)fs.style.display='none';
+  var rb=el('reveal-board');if(rb)rb.style.display='none';
   el('aud-opts').innerHTML=ALPHA.map(function(o){return '<div class="opt-card '+o+'" id="aoc-'+o+'"><div class="opt-icon">'+o+'</div><div class="opt-txt">'+esc(q.options[o])+'</div></div>';}).join('');
   startStdTimer(q.timeLimit,q.startTime);
   sfxQuestionAppear();
@@ -1148,9 +1165,44 @@ function renderStdReveal(){
   if(!gs.cq||!gs.cq.answer)return;clearTimer();stopSFXTicking();var c=gs.cq.answer;
   ALPHA.forEach(function(o){var e=el('aoc-'+o);if(!e)return;e.classList.add(o===c?'rv-ok':'rv-no');});
   el('tc-num').textContent='✓';el('tc-num').style.color='var(--green)';el('tc-ring').style.stroke='var(--green)';el('tc-ring').style.strokeDashoffset='0';el('tc-glow').style.strokeDashoffset='0';el('pb').style.width='100%';el('pb').style.background='linear-gradient(90deg,#065f46,var(--green))';
-  renderStatBars();el('aud-stats').style.display='grid';
-  /* Fastest answer spotlight */
-  showFastestAnswer(c);
+  renderStatBars();
+  if(gs.state==='reveal'){
+    /* scored — show the per-player results board (names, correct/wrong, scores) */
+    el('aud-stats').style.display='none';
+    renderRevealBoard(c);
+    showFastestAnswer(c);
+  }else{
+    /* time_up — no scores yet, just the option tallies */
+    el('aud-stats').style.display='grid';
+    var b=el('reveal-board');if(b)b.style.display='none';
+    var fs=el('fastest-spot');if(fs)fs.style.display='none';
+  }
+}
+function renderRevealBoard(correct){
+  var board=el('reveal-board');if(!board)return;
+  var arr=Object.values(players||{}).filter(function(p){return p&&p.name;});
+  if(!arr.length){board.style.display='none';return;}
+  arr.sort(function(a,b){
+    var ac=(a.lastAnswer===correct)?1:0,bc=(b.lastAnswer===correct)?1:0;
+    if(bc!==ac)return bc-ac;
+    return (b.score||0)-(a.score||0);
+  });
+  var co=(gs.cq&&gs.cq.options)?gs.cq.options:{};
+  var rows=arr.map(function(p){
+    var ok=(p.lastAnswer===correct);
+    var pe=p.pointsEarned||0;
+    return '<div class="rv-player '+(ok?'ok':'no')+'">'+
+      '<div class="rvp-name">'+esc(p.name)+'</div>'+
+      '<div class="rvp-verdict">'+(ok?'✓ CORRECT':'✗ WRONG')+'</div>'+
+      '<div class="rvp-pts">'+(ok?('+'+pe):'+0')+'</div>'+
+      '<div class="rvp-score">'+(p.score||0)+'</div>'+
+    '</div>';
+  }).join('');
+  board.innerHTML=
+    '<div class="rv-ans-head">Correct Answer&nbsp; <b>'+correct+'</b>'+(co[correct]?('&nbsp;—&nbsp;'+esc(co[correct])):'')+'</div>'+
+    '<div class="rv-cols"><span>Player</span><span>Result</span><span>This Q</span><span>Score</span></div>'+
+    '<div class="rv-players">'+rows+'</div>';
+  board.style.display='block';
 }
 function showFastestAnswer(correct){
   var fastest=null, highPts=0;
