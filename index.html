@@ -702,6 +702,11 @@ function ensureMaster(){
 
 /* ── AMBIENT SUSPENSE DRONE ── */
 function startDrone(){
+  /* Suspense drone disabled — it produced an odd vibrating noise.
+     All sound effects (correct, wrong, applause, time-up, etc.) are unaffected. */
+  return;
+}
+function _startDrone_DISABLED(){
   if(!_audioStarted)return;
   stopDrone();
   var ax=getAx();
@@ -755,9 +760,8 @@ function stopDrone(){
 }
 /* Adjust drone intensity — 0 to 1 */
 function setDroneIntensity(level){
-  if(!_droneGain||!_ax)return;
-  _droneGain.gain.setTargetAtTime(Math.max(0,Math.min(1,level)),_ax.currentTime,0.5);
-  /* Lower imported background music during tense/question moments, restore otherwise */
+  /* Drone disabled, but still use this hook to duck imported music during questions */
+  if(_droneGain&&_ax)_droneGain.gain.setTargetAtTime(Math.max(0,Math.min(1,level)),_ax.currentTime,0.5);
   duckMusic(level>=0.7);
 }
 
