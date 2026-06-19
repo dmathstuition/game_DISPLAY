@@ -1372,19 +1372,31 @@ function handleOral(){
   var pop=el('oral-result-pop'),idle=el('oral-idle-msg'),opts=el('oral-opts'),qtext=el('oral-q-text');
 
   if(oral.cq){
-    /* always render the question + options (big, like other modes) */
+    /* always render the question (big) */
     qtext.textContent=oral.cq.text;
     qtext.className='q-text-big'+(oral.cq.text.length>80?' long':'');
     var badge=el('oral-turn-badge');
     var gn=g[gi]?g[gi].name:'Group';
     badge.textContent=oral.cq.isBonus?('PASS — '+gn+' (+5)'):(gn+' (+10)');
-    opts.style.display='grid';idle.style.display='none';
+    idle.style.display='none';
     var correct=oral.cq.answer, reveal=(oral.state==='reveal');
-    opts.innerHTML=Object.keys(oral.cq.options||{}).map(function(o){
-      var cls='opt-card '+o;
-      if(reveal){ cls+=(o===correct)?' rv-ok':' rv-no'; }
-      return '<div class="'+cls+'"><div class="opt-icon">'+o+'</div><div class="opt-txt">'+esc(oral.cq.options[o])+'</div></div>';
-    }).join('');
+    var hasOpts=oral.cq.options&&Object.keys(oral.cq.options).length>0;
+    if(hasOpts){
+      opts.style.display='grid';
+      opts.innerHTML=Object.keys(oral.cq.options).map(function(o){
+        var cls='opt-card '+o;
+        if(reveal){ cls+=(o===correct)?' rv-ok':' rv-no'; }
+        return '<div class="'+cls+'"><div class="opt-icon">'+o+'</div><div class="opt-txt">'+esc(oral.cq.options[o])+'</div></div>';
+      }).join('');
+    }else{
+      /* Theory question — no options. Show a work-it-out cue (or the answer on reveal) */
+      opts.style.display='block';
+      if(reveal){
+        opts.innerHTML='<div style="text-align:center;background:rgba(34,197,94,.1);border:2px solid rgba(34,197,94,.4);border-radius:16px;padding:22px;margin-top:6px"><div style="font-size:1rem;letter-spacing:2px;text-transform:uppercase;color:var(--green);font-weight:800;margin-bottom:8px">Answer</div><div style="font-size:clamp(1.6rem,3vw,2.6rem);font-weight:900;color:#fff">'+esc(oral.cq.answer)+'</div></div>';
+      }else{
+        opts.innerHTML='<div style="text-align:center;color:var(--text2);font-size:1.15rem;margin-top:10px"><span style="font-size:1.8rem">✍️</span><br>Work it out — you have time on the clock</div>';
+      }
+    }
   } else {
     qtext.textContent='Oral Round';opts.style.display='none';opts.innerHTML='';
     idle.style.display='flex';el('oral-turn-badge').textContent='Standing by';
@@ -1412,17 +1424,18 @@ function handleOral(){
     if(_oralAudInt){clearInterval(_oralAudInt);_oralAudInt=null;}
     var r=oral.lastResult;
     pop.style.display='flex';
+    var ansTxt=(oral.cq&&oral.cq.answer)?oral.cq.answer:(r.answer||'');
     if(r.correct){
       el('oral-result-icon').textContent='🎉';
       el('oral-result-verdict').textContent='CORRECT!';
       el('oral-result-verdict').style.color='var(--green)';
-      el('oral-result-detail').innerHTML='<b>'+esc(r.groupName||'')+'</b> scored +'+r.points+(r.isBonus?' on the pass':'')+' marks';
+      el('oral-result-detail').innerHTML='<b>'+esc(r.groupName||'')+'</b> scored +'+r.points+(r.isBonus?' on the pass':'')+' marks'+(ansTxt?'<br><span style="font-size:.85em;color:var(--text2)">Answer: <b style="color:var(--green)">'+esc(ansTxt)+'</b></span>':'');
       if(typeof sfxCorrectReveal==='function')sfxCorrectReveal();
     }else{
       el('oral-result-icon').textContent='❌';
       el('oral-result-verdict').textContent=r.bothMissed?'Both Missed':'WRONG';
       el('oral-result-verdict').style.color='var(--red-b)';
-      el('oral-result-detail').innerHTML='<b>'+esc(r.groupName||'')+'</b> didn\u2019t score'+(r.answer?'. Correct answer: <b style="color:var(--green)">'+r.answer+'</b>':'');
+      el('oral-result-detail').innerHTML='<b>'+esc(r.groupName||'')+'</b> didn\u2019t score'+(ansTxt?'<br><span style="font-size:.9em">Answer: <b style="color:var(--green)">'+esc(ansTxt)+'</b></span>':'');
       if(typeof sfxWrongReveal==='function')sfxWrongReveal();
     }
   }
