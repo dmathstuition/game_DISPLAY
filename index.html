@@ -3,9 +3,171 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>IJA Quiz — Live Screen</title>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   FIREBASE-COMPAT SHIM, BACKED BY SUPABASE (Postgres + Realtime)
+   Reproduces the slice of the firebase-compat API this app uses —
+   initializeApp / database().ref() / auth() — so nothing below this
+   block has to change. See supabase-setup.sql for the required table
+   + RPC functions this shim calls.
+   ═══════════════════════════════════════════════════════════════ */
+(function(){
+  var TABLE='quiz_state', ROW_ID='main', TS='__RTDB_SERVER_TIMESTAMP__';
+  var sb=null, localState={}, ready=false, readyQueue=[];
+  var listeners=[], connListeners=[], timeListeners=[], isConnected=false, serverOffsetMs=0;
+
+  function pathArr(p){ return p ? String(p).split('/').filter(Boolean) : []; }
+  function getAt(o,arr){ var c=o; for(var i=0;i<arr.length;i++){ if(c==null) return undefined; c=c[arr[i]]; } return c; }
+  function setAtLocal(o,arr,v){
+    if(!arr.length) return v;
+    var copy = Array.isArray(o) ? o.slice() : Object.assign({}, o||{});
+    if(arr.length===1){ copy[arr[0]]=v; return copy; }
+    copy[arr[0]] = setAtLocal(copy[arr[0]]||{}, arr.slice(1), v);
+    return copy;
+  }
+  function deepEqual(a,b){
+    if(a===b) return true;
+    if(typeof a!=='object' || typeof b!=='object' || a===null || b===null) return false;
+    var ak=Object.keys(a), bk=Object.keys(b);
+    if(ak.length!==bk.length) return false;
+    for(var i=0;i<ak.length;i++){ if(!deepEqual(a[ak[i]], b[ak[i]])) return false; }
+    return true;
+  }
+  function resolveTS(v){
+    if(v===TS) return Date.now()+serverOffsetMs;
+    if(Array.isArray(v)) return v.map(resolveTS);
+    if(v && typeof v==='object'){ var o={}; for(var k in v) o[k]=resolveTS(v[k]); return o; }
+    return v;
+  }
+  function snap(val){ return { val:function(){return val===undefined?null:val;}, exists:function(){return val!==undefined&&val!==null;} }; }
+  function whenReady(fn){ if(ready) fn(); else readyQueue.push(fn); }
+  function fireAll(){
+    listeners.forEach(function(l){
+      var v=getAt(localState, pathArr(l.path)); if(v===undefined) v=null;
+      if(!deepEqual(v,l.lastVal)){ l.lastVal=v; l.cb(snap(v)); }
+    });
+  }
+  function fetchInitial(){
+    return sb.from(TABLE).select('data').eq('id',ROW_ID).maybeSingle().then(function(res){
+      if(res.error) console.error('RTDB shim: initial fetch failed', res.error);
+      localState = (res.data && res.data.data) || {};
+      ready=true; readyQueue.forEach(function(fn){fn();}); readyQueue=[]; fireAll();
+    });
+  }
+  function subscribeRT(){
+    sb.channel('quiz_state_rt')
+      .on('postgres_changes',{event:'*',schema:'public',table:TABLE,filter:'id=eq.'+ROW_ID},function(payload){
+        if(payload.new && payload.new.data!==undefined){ localState = payload.new.data || {}; fireAll(); }
+      })
+      .subscribe(function(status){
+        isConnected = (status==='SUBSCRIBED');
+        connListeners.forEach(function(l){ l.cb(snap(isConnected)); });
+      });
+  }
+  function syncTime(){
+    return Promise.resolve(sb.rpc('rtdb_now')).then(function(res){
+      if(res && res.data!=null){
+        serverOffsetMs = Number(res.data)-Date.now();
+        timeListeners.forEach(function(cb){ cb(snap(serverOffsetMs)); });
+      }
+    }).catch(function(){});
+  }
+
+  function refObj(path){
+    if(path==='.info/connected'){
+      return {
+        on:function(evt,cb){ connListeners.push({cb:cb}); cb(snap(isConnected)); },
+        off:function(){ connListeners=[]; },
+        once:function(){ return Promise.resolve(snap(isConnected)); }
+      };
+    }
+    if(path==='/.info/serverTimeOffset'){
+      return {
+        on:function(evt,cb){ timeListeners.push(cb); whenReady(function(){cb(snap(serverOffsetMs));}); },
+        off:function(){ timeListeners=[]; }
+      };
+    }
+    var p = path || '';
+    return {
+      on:function(evt,cb){
+        var l={path:p,cb:cb,lastVal:undefined};
+        listeners.push(l);
+        whenReady(function(){ var v=getAt(localState,pathArr(p)); l.lastVal=v===undefined?null:v; cb(snap(l.lastVal)); });
+        return cb;
+      },
+      off:function(){ listeners = listeners.filter(function(l){return l.path!==p;}); },
+      once:function(){
+        return new Promise(function(resolve){
+          whenReady(function(){ var v=getAt(localState,pathArr(p)); resolve(snap(v===undefined?null:v)); });
+        });
+      },
+      set:function(value){
+        var v = resolveTS(value===undefined?null:value);
+        if(v===null) return Promise.resolve(sb.rpc('rtdb_remove',{p_path:pathArr(p)}));
+        return Promise.resolve(sb.rpc('rtdb_set',{p_path:pathArr(p), p_value:v}));
+      },
+      update:function(obj){
+        var full={};
+        Object.keys(obj).forEach(function(k){ var fp=p?(p+'/'+k):k; full[fp]=resolveTS(obj[k]); });
+        return Promise.resolve(sb.rpc('rtdb_update',{p_updates:full}));
+      },
+      remove:function(){ return Promise.resolve(sb.rpc('rtdb_remove',{p_path:pathArr(p)})); },
+      child:function(name){ return refObj(p?(p+'/'+name):name); },
+      transaction:function(updateFn){
+        function attempt(triesLeft){
+          var cur = getAt(localState, pathArr(p)); if(cur===undefined) cur=null;
+          var proposed = updateFn(cur);
+          if(proposed===undefined) return Promise.resolve({committed:false, snapshot:snap(cur)});
+          return Promise.resolve(sb.rpc('rtdb_cas',{p_path:pathArr(p), p_expected:cur, p_new:proposed})).then(function(res){
+            var returned = res && res.data;
+            if(deepEqual(returned, proposed)){
+              localState = setAtLocal(localState, pathArr(p), proposed);
+              return {committed:true, snapshot:snap(proposed)};
+            } else if(triesLeft>0){
+              localState = setAtLocal(localState, pathArr(p), returned);
+              return attempt(triesLeft-1);
+            } else {
+              return {committed:false, snapshot:snap(returned)};
+            }
+          });
+        }
+        return attempt(5);
+      },
+      onDisconnect:function(){
+        /* No true server-side disconnect hook over Supabase Realtime.
+           The app's own heartbeat/lastSeen staleness check is the real
+           presence mechanism, so this is intentionally a soft no-op. */
+        return { set:function(){return Promise.resolve();}, cancel:function(){return Promise.resolve();} };
+      }
+    };
+  }
+
+  window.firebase = {
+    initializeApp:function(config){
+      sb = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
+      fetchInitial().then(function(){ subscribeRT(); syncTime(); setInterval(syncTime,60000); });
+    },
+    database:function(){ return { ref:function(path){ return refObj(path); } }; },
+    auth:function(){
+      return {
+        signInWithEmailAndPassword:function(email,password){
+          return Promise.resolve(sb.auth.signInWithPassword({email:email,password:password})).then(function(res){
+            if(res.error) throw res.error; return res.data;
+          });
+        },
+        signInAnonymously:function(){
+          return Promise.resolve(sb.auth.signInAnonymously()).then(function(res){
+            if(res.error) throw res.error; return res.data;
+          });
+        },
+        signOut:function(){ return Promise.resolve(sb.auth.signOut()); }
+      };
+    }
+  };
+  window.firebase.database.ServerValue = { TIMESTAMP: TS };
+})();
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Baloo+2:wght@700;800;900&family=Nunito:wght@700;800;900&family=Space+Grotesk:wght@400;600;700;800&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -1031,16 +1193,11 @@ function sv(id,v){const e=el(id);if(e)e.value=v;}
 function toArray(val){if(!val)return[];if(Array.isArray(val))return val;return Object.keys(val).sort((a,b)=>Number(a)-Number(b)).map(k=>val[k]);}
 
 /* SETUP */
-/* ── FIREBASE — hardcoded config ── */
+/* ── SUPABASE — fill in your project's values below ── */
 try{
   firebase.initializeApp({
-    apiKey:"AIzaSyB_BeXdQFOPUVJLL59OWnLFC61_zs62oLs",
-    authDomain:"ija-maths-quiz.firebaseapp.com",
-    databaseURL:"https://ija-maths-quiz-default-rtdb.firebaseio.com",
-    projectId:"ija-maths-quiz",
-    storageBucket:"ija-maths-quiz.firebasestorage.app",
-    messagingSenderId:"940095816285",
-    appId:"1:940095816285:web:a6fb99604427346eef83b4"
+    supabaseUrl:"https://YOUR-PROJECT.supabase.co",
+    supabaseAnonKey:"YOUR-ANON-KEY"
   });
   db=firebase.database();
   try{initServerOffset();}catch(e){}
